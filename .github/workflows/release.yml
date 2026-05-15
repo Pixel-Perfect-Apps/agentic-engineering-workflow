@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Validate version in manifests matches tag
+        run: |
+          PLUGIN_VERSION=$(jq -r '.version' plugins/agentic-engineering-workflow/.claude-plugin/plugin.json)
+          MARKETPLACE_PLUGIN_VERSION=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
+          TAG_VERSION="${{ steps.version.outputs.version }}"
+
+          echo "plugin.json version:         $PLUGIN_VERSION"
+          echo "marketplace.json version:    $MARKETPLACE_PLUGIN_VERSION"
+          echo "tag version:                 $TAG_VERSION"
+
+          if [ "$PLUGIN_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::plugin.json version ($PLUGIN_VERSION) does not match tag ($TAG_VERSION)"
+            exit 1
+          fi
+          if [ "$MARKETPLACE_PLUGIN_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::marketplace.json plugin version ($MARKETPLACE_PLUGIN_VERSION) does not match tag ($TAG_VERSION)"
+            exit 1
+          fi
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # Pull everything under the matching ## [VERSION] heading up to the next ## [ heading
+          awk -v ver="$VERSION" '
+            /^## \[/ {
+              if (found) exit
+              if ($0 ~ "\\[" ver "\\]") { found=1; next }
+            }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+
+          if [ ! -s release-notes.md ]; then
+            echo "No CHANGELOG entry found for $VERSION; using auto-generated notes."
+            echo "USE_AUTO_NOTES=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "USE_AUTO_NOTES=false" >> "$GITHUB_OUTPUT"
+            echo "Release notes preview:"
+            echo "---"
+            cat release-notes.md
+            echo "---"
+          fi
+
+      - name: Create GitHub Release (with CHANGELOG notes)
+        if: steps.notes.outputs.USE_AUTO_NOTES == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "${{ steps.version.outputs.tag }}" \
+            --notes-file release-notes.md
+
+      - name: Create GitHub Release (auto-generated notes fallback)
+        if: steps.notes.outputs.USE_AUTO_NOTES == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "${{ steps.version.outputs.tag }}" \
+            --generate-notes

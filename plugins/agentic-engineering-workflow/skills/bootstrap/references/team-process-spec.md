@@ -1,18 +1,18 @@
 # Agentic Engineering Workflow — Spec
 
-> A portable, opinionated workflow for software teams where Claude is part of the team. Two ways to adopt it: install the [Claude Code plugin](#install-via-plugin-recommended) (one command, everything scaffolded), or drop this single `.md` file into a workspace and paste the [bootstrap prompt](#-prompt-to-paste-) into a fresh Claude session.
+> A portable, opinionated workflow for software teams where an AI coding agent is part of the team. Two ways to adopt it: install the [Claude Code plugin](#install-via-plugin-recommended) (one command, everything scaffolded), or drop this single `.md` file into a workspace and paste the [bootstrap prompt](#-prompt-to-paste-) into a fresh agent session.
 >
-> Tracker-agnostic, stack-agnostic. Works for solo founders, small teams, or multi-agent setups.
+> Tracker-agnostic, stack-agnostic, agent-agnostic. Works with Claude Code natively, with Codex and other agents via manual install or drop-in spec. Solo founders, small teams, multi-agent setups.
 
 ---
 
 ## What this is
 
-A bundle of opinions about how to run a software project where Claude is one of the contributors:
+A bundle of opinions about how to run a software project where an AI coding agent is one of the contributors:
 
-- **Roles are separated.** A human (or humans) owns **WHAT** to build. Claude owns **HOW**. When the two disagree on WHAT, the human wins. HOW guidance is incorporated.
+- **Roles are separated.** A human (or humans) owns **WHAT** to build. The agent owns **HOW**. When the two disagree on WHAT, the human wins. HOW guidance is incorporated.
 - **Cross-cutting decisions get reviewed by 2-3 orthogonal critics in parallel** (CTO subagent for tech, CPO for product, CDO for design — pick whichever fit the project). The triad reviews proposals before they land; their feedback is mandatory input, not optional.
-- **The issue tracker is the source of truth.** Not chat, not memory, not commits. Whatever tracker the team uses (Linear, GitHub Issues, Jira, Notion — pick one) becomes the single dashboard. Claude updates it as work progresses.
+- **The issue tracker is the source of truth.** Not chat, not memory, not commits. Whatever tracker the team uses (Linear, GitHub Issues, Jira, Notion — pick one) becomes the single dashboard. The agent updates it as work progresses.
 - **Decisions leave a paper trail (ADRs).** Anything touching multiple modules / repos gets a numbered Architecture Decision Record.
 - **Contract lock + phase milestones.** Sprints have explicit phases (Contract Lock → Core Build → UX → Integration → Beta Readiness). Contracts between layers freeze at end-of-Day-2.
 - **Bug + idea capture is fire-and-forget.** `/defect` and `/idea` slash commands take a one-liner, infer everything (priority, repro, hypothesis, cross-repo scope), file a ticket with no follow-up questions. Zero ceremony during testing.
@@ -20,8 +20,8 @@ A bundle of opinions about how to run a software project where Claude is one of 
 
 ### Good fit for
 
-- Solo founder + Claude (Claude executes; human approves)
-- Small teams (2-5 humans) where Claude is a peer agent / coordinator
+- Solo founder + AI agent (agent executes; human approves)
+- Small teams (2-5 humans) where the agent is a peer / coordinator
 - Multi-platform products (web + mobile + backend) where contracts between layers matter
 - Single-platform projects (web-only, backend-only) — just skip the platforms that don't apply
 - Open-source projects with mixed human/AI contributors
@@ -34,7 +34,7 @@ A bundle of opinions about how to run a software project where Claude is one of 
 
 ---
 
-## Install via plugin (recommended)
+## Install via Claude Code plugin (recommended for Claude Code users)
 
 The workflow is published as a Claude Code plugin. One-time install:
 
@@ -45,14 +45,26 @@ The workflow is published as a Claude Code plugin. One-time install:
 
 After install, three things become available in any workspace:
 - `/defect` and `/idea` slash commands for fire-and-forget bug + idea capture.
-- A **bootstrap** skill that scaffolds AGENTS.md / tracker / ADR / memory for a workspace. Invoke it by asking Claude to "bootstrap the agentic engineering workflow" or directly via `/agentic-engineering-workflow:bootstrap`.
+- A **bootstrap** skill that scaffolds AGENTS.md / tracker / ADR / memory for a workspace. Invoke it by asking your agent to "bootstrap the agentic engineering workflow" or directly via `/agentic-engineering-workflow:bootstrap`.
 - This full spec, available as a reference doc inside the plugin.
 
-## Install manually (no plugin)
+## Install for Codex and other SKILL.md-compatible agents
 
-Don't want a plugin install? Drop just this `.md` file into your workspace root and paste the [prompt block](#-prompt-to-paste-) below into a fresh Claude session. Claude will read the file end-to-end and execute the bootstrap.
+Copy the skills folder into your project's `.agents/skills/` directory:
 
-## Prerequisites (either path)
+```bash
+git clone --depth 1 https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow /tmp/aew
+mkdir -p .agents/skills && cp -r /tmp/aew/plugins/agentic-engineering-workflow/skills/* .agents/skills/
+rm -rf /tmp/aew
+```
+
+The skill content is generic — it works for any agent that follows SKILL.md-style instructions.
+
+## Install via drop-in spec (any agent, no plugin install)
+
+Don't want a plugin install? Drop just this `.md` file into your workspace root and paste the [prompt block](#-prompt-to-paste-) below into a fresh agent session. The agent will read the file end-to-end and execute the bootstrap. You miss the `/defect` and `/idea` slash commands but the rest works identically.
+
+## Prerequisites (any path)
 
 - An issue-tracker connection: Linear MCP, GitHub via `gh` CLI, Jira via its MCP, or any tracker with a queryable API.
 - Git access (`gh auth login` or equivalent).
@@ -62,7 +74,7 @@ Don't want a plugin install? Drop just this `.md` file into your workspace root 
 
 ## ⌜ PROMPT TO PASTE ⌟
 
-> Copy this entire block verbatim into a fresh Claude session. If you've installed the plugin, you can invoke the bootstrap skill directly instead; this prompt is for manual installs where you dropped the spec `.md` into the workspace yourself.
+> Copy this entire block verbatim into a fresh agent session. If you've installed the Claude Code plugin, you can invoke the bootstrap skill directly instead; this prompt is for manual installs where you dropped the spec `.md` into the workspace yourself, or for agents that don't support Claude Code plugins.
 
 ```text
 You are taking on the "Director of Engineering" (DoE) role for this project.
@@ -199,9 +211,9 @@ B. ASK ME ONE BATCHED ROUND OF QUESTIONS
    5. **Branch convention** (e.g., `<username>/<id>-<slug>` or
       `feature/<id>-<slug>` or just `<id>-<slug>`).
    6. **Operating mode**:
-        a) PLANNER-ONLY — Claude plans, dispatches reviewers, files
+        a) PLANNER-ONLY — the agent plans, dispatches reviewers, files
            tickets, monitors. Other humans/agents execute.
-        b) SOLE-IC — Claude executes every ticket end-to-end,
+        b) SOLE-IC — the agent executes every ticket end-to-end,
            sequentially.
         c) HYBRID — Planner by default; executes when explicitly
            delegated.
@@ -261,9 +273,10 @@ C. SCAFFOLD THE FILES
      `decisions/` directory makes sense for the layout: `docs/decisions/`
      for single-repo, `<docs-repo>/decisions/` for multi-repo. If no
      docs location exists, create `docs/decisions/0001-bootstrap.md`.
-   - Memory bootstrap files at the path the Claude harness uses
+   - Memory bootstrap files at the path the agent's harness uses
      (typically `~/.claude/projects/<slugified-workdir>/memory/` for
-     Claude Code): `MEMORY.md` + `user_identity.md` +
+     Claude Code; consult the equivalent path for Codex or other
+     agents): `MEMORY.md` + `user_identity.md` +
      `project_current_state.md` + `reference_tracker.md`.
 
 D. SET UP THE ISSUE TRACKER
@@ -310,7 +323,7 @@ This workflow is built on a few core convictions. They're worth understanding be
 ### Convictions
 
 1. **The hardest part of multi-person software is communication, not code.** A workflow that makes intent visible (tickets, ADRs, status updates) beats one that optimizes for individual throughput.
-2. **AI agents work best with explicit operating contracts.** Telling Claude "you're the DoE" with clear authority boundaries produces better results than treating it as an oracle that knows what to do.
+2. **AI agents work best with explicit operating contracts.** Telling the agent "you're the DoE" with clear authority boundaries produces better results than treating it as an oracle that knows what to do.
 3. **Reviews catch things makers miss.** A draft that survives three orthogonal critiques (technical, product, design) is meaningfully more durable than one signed off by a single reviewer.
 4. **Process pays back proportionally to project complexity.** The triad-review + ADR overhead is overkill for a single-file script and essential for a multi-repo product. The bootstrap asks about operating mode so the overhead can scale.
 5. **The tracker is the source of truth, not chat.** Conversation context evaporates between sessions; tickets and ADRs persist.
@@ -331,11 +344,11 @@ This workflow is built on a few core convictions. They're worth understanding be
 | Role | Held by | Decides |
 |---|---|---|
 | Founder / Product Owner / "the human" | One or more humans on the team | **WHAT** ships. Scope, priorities, brand voice, design deviations. |
-| Director of Engineering (DoE) | Claude | **HOW** it ships. Implementation, sequencing, tickets, ADRs. |
-| CTO (subagent) | Claude dispatching a general-purpose subagent | Technical feasibility, architecture, risk. |
-| CPO (subagent) | Claude dispatching a general-purpose subagent | Product priority, sequencing — **MUST cite the PRD** if one exists. |
-| CDO (subagent) | Claude dispatching a general-purpose subagent | Design fidelity — **MUST cite design system** if one exists. |
-| Additional reviewers (optional) | Claude dispatching subagents | Staff-level platform-specific review (e.g., Staff iOS, Staff Backend), Legal, Security, etc. |
+| Director of Engineering (DoE) | The AI coding agent | **HOW** it ships. Implementation, sequencing, tickets, ADRs. |
+| CTO (subagent) | DoE dispatching a general-purpose subagent | Technical feasibility, architecture, risk. |
+| CPO (subagent) | DoE dispatching a general-purpose subagent | Product priority, sequencing — **MUST cite the PRD** if one exists. |
+| CDO (subagent) | DoE dispatching a general-purpose subagent | Design fidelity — **MUST cite design system** if one exists. |
+| Additional reviewers (optional) | DoE dispatching subagents | Staff-level platform-specific review (e.g., Staff iOS, Staff Backend), Legal, Security, etc. |
 
 The triad reviewers are **reviewers, not scope-deciders.** When they recommend scope changes ("cut this feature", "this isn't in the PRD"), DoE flags to the human — DoE does NOT cut from scope on triad pushback alone. **Human wins when scope is disputed.** Triad's HOW guidance is incorporated; their WHAT pushback becomes open questions for the human.
 
@@ -343,8 +356,8 @@ The triad reviewers are **reviewers, not scope-deciders.** When they recommend s
 
 Pick one at bootstrap. Switchable later.
 
-- **PLANNER-ONLY** (recommended when there's a team of humans + agents): Claude drafts plans, dispatches reviewers, files tickets, monitors, files defects/ideas, posts status updates. Other humans / agents pick up implementation. Claude does NOT auto-execute implementation work unless explicitly delegated.
-- **SOLE-IC** (recommended for solo founder + Claude): Claude executes every ticket end-to-end. Sequentially, one ticket at a time. Code → test → push → watch deploy → next ticket.
+- **PLANNER-ONLY** (recommended when there's a team of humans + agents): the agent drafts plans, dispatches reviewers, files tickets, monitors, files defects/ideas, posts status updates. Other humans / agents pick up implementation. The agent does NOT auto-execute implementation work unless explicitly delegated.
+- **SOLE-IC** (recommended for a solo founder + one agent): the agent executes every ticket end-to-end. Sequentially, one ticket at a time. Code → test → push → watch deploy → next ticket.
 - **HYBRID**: Defaults to planner; executes only when explicitly delegated. Each delegation is one ticket — does not generalize into permanent IC mode.
 
 ---
@@ -357,9 +370,10 @@ Pick whichever fits the project.
 
 ```
 <parent-folder>/                    ← NOT a git repo; holds AI config + sibling repos
-  AGENTS.md                         ← root working guide (this is what Claude reads first)
-  CLAUDE.md                         ← compatibility shim → AGENTS.md
+  AGENTS.md                         ← root working guide (this is what your agent reads first)
+  CLAUDE.md                         ← compatibility shim → AGENTS.md (Claude Code looks here first)
   .claude/                          ← Claude Code config
+  .agents/                          ← Codex / other-agent config
   .agents/                          ← skills + plugins (alternate harness)
   docs/                             ← optional human local-notes folder
   <project>-contracts/              ← shared types / DTOs / OpenAPI (if applicable)
@@ -442,7 +456,7 @@ Title prefixed "<HumanName>:" → assign to that human
 Otherwise                     → leave unassigned (assignee: null)
 ```
 
-**ALWAYS pass `assignee: null` explicitly** on every ticket-creation call when the tracker MCP defaults to "assign to caller". The caller is often Claude's authenticated user (= the human running the session), which pollutes the human's queue with tickets they shouldn't be on the hook for. The title-prefix convention is the only way a ticket gets assigned at creation; everything else stays in the triage pool.
+**ALWAYS pass `assignee: null` explicitly** on every ticket-creation call when the tracker MCP defaults to "assign to caller". The caller is often the agent's authenticated user (= the human running the session), which pollutes the human's queue with tickets they shouldn't be on the hook for. The title-prefix convention is the only way a ticket gets assigned at creation; everything else stays in the triage pool.
 
 ### Canonical label taxonomy
 
@@ -641,7 +655,7 @@ For projects without an explicit contracts layer, the same discipline applies to
 ## §8 — PR hygiene
 
 - **Branch name:** `<user>/<issue-id>-<short-slug>` (or include the issue ID anywhere visible — most conventions prefix with the contributor's name or initials).
-- **Commit author:** the human's git identity, not Claude's. Configure on first run if needed.
+- **Commit author:** the human's git identity, not the agent's. Configure on first run if needed.
 - **PR body trailer:** include the issue-tracker's auto-close keyword (`Closes #N` / `Closes PROJ-NN` / `Fixes ISSUE-N` — check the tracker's docs for which keywords trigger close-on-merge).
 - **Never** `--no-verify`, `--no-gpg-sign`, force-push to main, or amend published commits.
 - **Stage specific files** — avoid `git add -A` (accidentally commits `.env`, build artifacts, secrets).
@@ -679,8 +693,8 @@ This philosophy is optional — some projects have legitimate reasons for thick 
 
 ## §11 — Skill files (full SKILL.md contents)
 
-Each skill goes in `.claude/skills/<name>/SKILL.md` (Claude Code) and/or `.agents/skills/<name>/SKILL.md` (Codex). The bootstrap Claude should:
-1. Detect which CLI is configured in the workspace and write to the right path.
+Each skill goes in `.claude/skills/<name>/SKILL.md` (Claude Code) and/or `.agents/skills/<name>/SKILL.md` (Codex and other agents that follow the SKILL.md convention). The bootstrap agent should:
+1. Detect which agent CLI is configured in the workspace and write to the right path (or both, if the workspace uses multiple agents).
 2. Replace `<TRACKER_MCP_PREFIX>` in the skill templates with the actual MCP function prefix detected during introspection (e.g., `mcp__linear__`, `mcp__plugin_linear_linear__`, `mcp__atlassian__`).
 3. Replace tracker-specific placeholders (`<TEAM_OR_PROJECT_NAME>`, `<BUG_TRIAGE_PROJECT_ID>`, `<IDEAS_PROJECT_ID>`) with the IDs created in step D.
 4. For non-MCP trackers (plain GitHub Issues, etc.), rewrite the "File via Linear MCP" section to use `gh issue create` or the equivalent CLI.
@@ -962,7 +976,7 @@ Done. The ticket sits in "Ideas / Backlog" until DoE triages at a future sprint 
 
 ## §12 — Memory system layout
 
-The Claude harness stores auto-memory per-workspace. The exact path depends on the harness:
+The agent harness stores auto-memory per-workspace. The exact path depends on the harness:
 
 - **Claude Code:** `~/.claude/projects/<slugified-workdir>/memory/` (slug = workdir path with `/` → `-`).
 - **Codex:** check the platform docs; typically `~/.codex/...` or similar.
@@ -1197,7 +1211,7 @@ metadata:
 
 ---
 
-## §15 — Setup checklist (Claude executes this on first run)
+## §15 — Setup checklist (the agent executes this on first run)
 
 Use the task-tracking tool (TaskCreate / equivalent) to mark each as it lands.
 
@@ -1208,7 +1222,7 @@ Use the task-tracking tool (TaskCreate / equivalent) to mark each as it lands.
 - [ ] **A5.** Detect existing AGENTS.md / CLAUDE.md / .claude/ / .agents/.
 - [ ] **A6.** Detect stack-hint files (package.json, Cargo.toml, build.gradle, etc.).
 - [ ] **A7.** **Classify** the workspace as GREENFIELD / EXISTING-COMPATIBLE / EXISTING-DIVERGENT / AMBIGUOUS. Record reasoning.
-- [ ] **B1.** AskUserQuestion: confirm classification (Q1) + ask anything else not detected (Q2-Q11). Single batched turn.
+- [ ] **B1.** AskUserQuestion (or your agent's equivalent batched-question tool): confirm classification (Q1) + ask anything else not detected (Q2-Q11). Single batched turn.
 - [ ] **C1.** Write root `AGENTS.md` from §13.1 template, filled with answers.
 - [ ] **C2.** Write `CLAUDE.md` compatibility shim.
 - [ ] **C3.** Write per-repo / per-module `AGENTS.md` stubs from §13.2.
@@ -1241,7 +1255,7 @@ This spec is intentionally opinionated. Some pieces are universal, others are co
 
 ### Hold these constant
 
-- **Human owns WHAT, Claude owns HOW.** The authority split is the load-bearing concept.
+- **Human owns WHAT, the agent owns HOW.** The authority split is the load-bearing concept.
 - **`assignee: null` on every ticket call** unless explicitly assigning to a human. This is the #1 footgun across multiple trackers.
 - **Reviews happen in parallel.** Sequential reviews lose orthogonality.
 - **ADRs for cross-cutting decisions.** Without them, decisions get re-litigated every sprint.
@@ -1254,7 +1268,7 @@ If you find yourself ignoring §9 (working agreements) for more than one sprint,
 
 ---
 
-## §17 — Final notes for the bootstrap Claude
+## §17 — Final notes for the bootstrap agent
 
 After running the setup checklist:
 - Print a clean summary of what you created.
@@ -1267,4 +1281,4 @@ If the operating mode is PLANNER-ONLY, also explain what kinds of work you will 
 
 ---
 
-**End of spec.** Edit this file to evolve the workflow. Re-run the prompt against an updated Claude session and the harness will pick up changes idempotently.
+**End of spec.** Edit this file to evolve the workflow. Re-run the prompt against an updated agent session and the harness will pick up changes idempotently.

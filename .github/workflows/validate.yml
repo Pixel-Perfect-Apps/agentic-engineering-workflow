@@ -1,0 +1,51 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-manifests:
+    name: Validate plugin + marketplace manifests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate marketplace.json is parseable
+        run: jq empty .claude-plugin/marketplace.json
+
+      - name: Validate plugin.json is parseable
+        run: jq empty plugins/agentic-engineering-workflow/.claude-plugin/plugin.json
+
+      - name: Validate version fields agree
+        run: |
+          MARKETPLACE_VERSION=$(jq -r '.version' .claude-plugin/marketplace.json)
+          MARKETPLACE_PLUGIN_VERSION=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
+          PLUGIN_VERSION=$(jq -r '.version' plugins/agentic-engineering-workflow/.claude-plugin/plugin.json)
+
+          echo "marketplace.json .version:              $MARKETPLACE_VERSION"
+          echo "marketplace.json .plugins[0].version:   $MARKETPLACE_PLUGIN_VERSION"
+          echo "plugin.json .version:                   $PLUGIN_VERSION"
+
+          if [ "$PLUGIN_VERSION" != "$MARKETPLACE_PLUGIN_VERSION" ]; then
+            echo "::error::plugin.json version and marketplace.json plugin version disagree"
+            exit 1
+          fi
+
+      - name: Validate every skill has a name + description
+        run: |
+          fail=0
+          for skill in plugins/*/skills/*/SKILL.md; do
+            if ! grep -q "^name:" "$skill"; then
+              echo "::error file=$skill::Missing 'name:' in frontmatter"
+              fail=1
+            fi
+            if ! grep -q "^description:" "$skill"; then
+              echo "::error file=$skill::Missing 'description:' in frontmatter"
+              fail=1
+            fi
+          done
+          exit $fail
