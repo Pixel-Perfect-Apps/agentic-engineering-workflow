@@ -4,6 +4,8 @@ All notable changes to this plugin will be documented here. Format based on [Kee
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-05-15
+
 ### Added
 - README status badges — release version (from latest tag), MIT license, "Claude Code Plugin", and "Agent-agnostic" — for quick at-a-glance signaling on the repo's GitHub landing page and any rendered preview.
 
@@ -24,5 +26,6 @@ Initial public release.
 - Plugin uses SemVer; this is a 0.x release so breaking changes may land in any minor version until 1.0.
 - `version` is now pinned, so `/plugin update` will pick up future releases. Commits between releases won't auto-deploy to installed instances.
 
-[Unreleased]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/releases/tag/v0.1.0
