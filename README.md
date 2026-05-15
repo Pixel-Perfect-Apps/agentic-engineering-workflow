@@ -1,5 +1,10 @@
 # Agentic Engineering Workflow
 
+[![Release](https://img.shields.io/github/v/release/Pixel-Perfect-Apps/agentic-engineering-workflow?sort=semver&display_name=tag)](https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Claude Code Plugin](https://img.shields.io/badge/Claude_Code-Plugin-D97757)](https://claude.com/claude-code)
+[![Agent-agnostic](https://img.shields.io/badge/Agent-agnostic-7B5DF0)](#install--codex-cursor-cline-or-other-agents-manual)
+
 > Turn your AI coding agent into a **Director of Engineering** for your team. Sprint cadence, multi-agent review triad, ADR discipline, and one-keystroke bug + idea capture.
 
 A portable, opinionated workflow for software teams where an AI coding agent is part of the team. Distributed as a Claude Code plugin for one-command install — and the underlying skills + spec are agent-agnostic, so Codex, Cursor, Cline, and any other agent that reads SKILL.md-style instructions can use the same workflow with a manual install.

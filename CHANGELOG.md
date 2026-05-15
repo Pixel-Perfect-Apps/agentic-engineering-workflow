@@ -4,6 +4,9 @@ All notable changes to this plugin will be documented here. Format based on [Kee
 
 ## [Unreleased]
 
+### Added
+- README status badges — release version (from latest tag), MIT license, "Claude Code Plugin", and "Agent-agnostic" — for quick at-a-glance signaling on the repo's GitHub landing page and any rendered preview.
+
 ## [0.1.0] — 2026-05-15
 
 Initial public release.
