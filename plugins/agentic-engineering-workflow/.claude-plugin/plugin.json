@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "agentic-engineering-workflow",
+  "description": "Scaffold a Claude-driven team workflow into any workspace. Installs /defect + /idea slash commands plus a bootstrap skill that sets up AGENTS.md, ADR structure, tracker projects + labels, and the CTO/CPO/CDO review triad pattern.",
+  "author": {
+    "name": "Pixel Perfect Apps",
+    "url": "https://github.com/Pixel-Perfect-Apps"
+  },
+  "homepage": "https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow",
+  "repository": "https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "sprint",
+    "team",
+    "agentic",
+    "bootstrap",
+    "adr",
+    "triad-review"
+  ]
+}

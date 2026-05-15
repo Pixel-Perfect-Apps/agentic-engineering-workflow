@@ -1,0 +1,41 @@
+{
+  "name": "agentic-engineering-workflow",
+  "owner": {
+    "name": "Pixel Perfect Apps",
+    "url": "https://github.com/Pixel-Perfect-Apps"
+  },
+  "description": "Pixel Perfect Apps' open-source workflow plugins for Claude Code — turn Claude into a Director of Engineering with sprint cadence, multi-agent review triad, ADR discipline, and one-keystroke bug/idea capture.",
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "agentic-engineering-workflow",
+      "source": "./plugins/agentic-engineering-workflow",
+      "description": "Scaffold a Claude-driven team workflow into any workspace. Installs /defect + /idea slash commands, an AGENTS.md guide, ADR structure, tracker projects + labels, and the bootstrap skill that wires it all together.",
+      "author": {
+        "name": "Pixel Perfect Apps",
+        "url": "https://github.com/Pixel-Perfect-Apps"
+      },
+      "homepage": "https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow",
+      "repository": "https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": [
+        "workflow",
+        "sprint",
+        "linear",
+        "github-issues",
+        "jira",
+        "triad-review",
+        "team",
+        "director-of-engineering",
+        "agentic",
+        "bootstrap",
+        "adr",
+        "project-management"
+      ],
+      "tags": ["team-workflow", "sprint-planning", "multi-agent"]
+    }
+  ]
+}
