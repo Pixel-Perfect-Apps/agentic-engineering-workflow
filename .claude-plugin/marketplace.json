@@ -5,7 +5,7 @@
     "url": "https://github.com/Pixel-Perfect-Apps"
   },
   "description": "Pixel Perfect Apps' open-source workflow plugins — turn your AI coding agent into a Director of Engineering with sprint cadence, multi-agent review triad, ADR discipline, and one-keystroke bug/idea capture. Distributed via Claude Code marketplace; agent-agnostic skill content also installable manually for Codex and others.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "metadata": {
     "pluginRoot": "./plugins"
   },
@@ -13,7 +13,7 @@
     {
       "name": "agentic-engineering-workflow",
       "source": "./plugins/agentic-engineering-workflow",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "description": "Scaffold an agent-driven team workflow into any workspace. Installs /defect + /idea slash commands, an AGENTS.md guide, ADR structure, tracker projects + labels, and the bootstrap skill that wires it all together. Agent-agnostic skill content works with Claude Code, Codex, and any agent that reads SKILL.md-style instructions.",
       "author": {
         "name": "Pixel Perfect Apps",

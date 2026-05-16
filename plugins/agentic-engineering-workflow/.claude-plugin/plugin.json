@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "agentic-engineering-workflow",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Scaffold an agent-driven team workflow into any workspace. Installs /defect + /idea slash commands plus a bootstrap skill that sets up AGENTS.md, ADR structure, tracker projects + labels, and the CTO/CPO/CDO review triad pattern. Agent-agnostic by design — works with Claude Code natively; portable to Codex and other agents via manual install.",
   "author": {
     "name": "Pixel Perfect Apps",
