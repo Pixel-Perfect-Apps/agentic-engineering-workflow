@@ -4,6 +4,8 @@ All notable changes to this plugin will be documented here. Format based on [Kee
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-05-15
+
 ### Changed (bootstrap behavior — major UX revision)
 - **Bootstrap is now inspection-first and consent-based.** No more invasive tracker writes during setup. The bootstrap inspects the workspace + tracker read-only, makes educated guesses, and asks the user before any write.
 - **Workflow installation-state detection.** Before doing anything, the bootstrap checks for signatures that another collaborator already ran it (AGENTS.md "Tracker destinations" section, canonical labels in tracker, bootstrap ADR). Classifies as FRESH / PARTIAL / INSTALLED.
@@ -49,6 +51,7 @@ Initial public release.
 - Plugin uses SemVer; this is a 0.x release so breaking changes may land in any minor version until 1.0.
 - `version` is now pinned, so `/plugin update` will pick up future releases. Commits between releases won't auto-deploy to installed instances.
 
-[Unreleased]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/releases/tag/v0.2.0
 [0.1.1]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/releases/tag/v0.1.0
