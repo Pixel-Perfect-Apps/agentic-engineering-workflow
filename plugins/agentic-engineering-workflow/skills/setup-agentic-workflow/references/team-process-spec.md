@@ -1,6 +1,6 @@
 # Agentic Engineering Workflow — Spec
 
-> A portable, opinionated workflow for software teams where an AI coding agent is part of the team. Two ways to adopt it: install the [Claude Code plugin](#install-via-plugin-recommended) (one command, everything scaffolded), or drop this single `.md` file into a workspace and paste the [bootstrap prompt](#-prompt-to-paste-) into a fresh agent session.
+> A portable, opinionated workflow for software teams where an AI coding agent is part of the team. Two ways to adopt it: install the [Claude Code plugin](#install-via-plugin-recommended) (one command, everything scaffolded), or drop this single `.md` file into a workspace and paste the [setup prompt](#-prompt-to-paste-) into a fresh agent session.
 >
 > Tracker-agnostic, stack-agnostic, agent-agnostic. Works with Claude Code natively, with Codex and other agents via manual install or drop-in spec. Solo founders, small teams, multi-agent setups.
 
@@ -45,7 +45,7 @@ The workflow is published as a Claude Code plugin. One-time install:
 
 After install, three things become available in any workspace:
 - `/defect` and `/idea` slash commands for fire-and-forget bug + idea capture.
-- A **bootstrap** skill that scaffolds AGENTS.md / tracker / ADR / memory for a workspace. Invoke it by asking your agent to "bootstrap the agentic engineering workflow" or directly via `/agentic-engineering-workflow:bootstrap`.
+- A **setup-agentic-workflow** skill that scaffolds AGENTS.md / tracker / ADR / memory for a workspace. Invoke it by asking your agent to "set up the agentic engineering workflow" or directly via `/agentic-engineering-workflow:setup-agentic-workflow`.
 - This full spec, available as a reference doc inside the plugin.
 
 ## Install for Codex and other SKILL.md-compatible agents
@@ -62,7 +62,7 @@ The skill content is generic — it works for any agent that follows SKILL.md-st
 
 ## Install via drop-in spec (any agent, no plugin install)
 
-Don't want a plugin install? Drop just this `.md` file into your workspace root and paste the [prompt block](#-prompt-to-paste-) below into a fresh agent session. The agent will read the file end-to-end and execute the bootstrap. You miss the `/defect` and `/idea` slash commands but the rest works identically.
+Don't want a plugin install? Drop just this `.md` file into your workspace root and paste the [prompt block](#-prompt-to-paste-) below into a fresh agent session. The agent will read the file end-to-end and execute the setup. You miss the `/defect` and `/idea` slash commands but the rest works identically.
 
 ## Prerequisites (any path)
 
@@ -74,7 +74,7 @@ Don't want a plugin install? Drop just this `.md` file into your workspace root 
 
 ## ⌜ PROMPT TO PASTE ⌟
 
-> Copy this entire block verbatim into a fresh agent session. If you've installed the Claude Code plugin, you can invoke the bootstrap skill directly instead; this prompt is for manual installs where you dropped the spec `.md` into the workspace yourself, or for agents that don't support Claude Code plugins.
+> Copy this entire block verbatim into a fresh agent session. If you've installed the Claude Code plugin, you can invoke the setup-agentic-workflow skill directly instead; this prompt is for manual installs where you dropped the spec `.md` into the workspace yourself, or for agents that don't support Claude Code plugins.
 
 ```text
 You are taking on the "Director of Engineering" (DoE) role for this project.
@@ -83,7 +83,7 @@ end-to-end, in one pass.
 
 Read the agentic engineering workflow spec end-to-end before doing anything
 else. The spec lives either at `team-process-spec.md` in this workspace
-(manual install), or inside the installed plugin's bootstrap skill
+(manual install), or inside the installed plugin's setup-agentic-workflow skill
 references folder. If you can't find it, ask me for the path. It contains
 the full workflow spec plus templates and embedded slash-command skills.
 
@@ -134,13 +134,13 @@ A. INTROSPECT THE WORKSPACE
      already stashes long-form docs.
 
    What to look at — WORKFLOW INSTALLATION STATE (CRITICAL):
-   Another collaborator may already have run the bootstrap. Detect this
+   Another collaborator may already have run the setup. Detect this
    before writing anything. Check for these signatures:
    - Root `AGENTS.md` contains the section heading `## Tracker
      destinations` (this is the canonical marker — it's the section
-     /defect and /idea read from). If present, the bootstrap was at
+     /defect and /idea read from). If present, the setup was at
      least partially run here.
-   - A `*/decisions/0001-bootstrap.md` ADR exists noting workflow
+   - A `*/decisions/0001-setup.md` ADR exists noting workflow
      adoption.
    - Tracker has 3+ of the canonical labels co-existing (`kind:spec`,
      `sprint:s1`, `area:*`, `alarm:deploy-failure`, `gate:beta-ready`)
@@ -152,7 +152,7 @@ A. INTROSPECT THE WORKSPACE
      "Ideas / Backlog", or specifically configured destinations).
    
    Classify the **install state**:
-   - **FRESH** — no signatures found. Use the full bootstrap flow.
+   - **FRESH** — no signatures found. Use the full setup flow.
    - **PARTIAL** — some signatures present, others missing. Someone
      started but didn't finish, or pieces have rotted.
    - **INSTALLED** — all key signatures present. Another collaborator
@@ -231,7 +231,7 @@ B. ASK ME ONE BATCHED ROUND OF QUESTIONS
      - <e.g., AGENTS.md with Tracker destinations: Linear team 'Eng',
        /defect → 'Triage' (built-in)>
      - <e.g., 12 of the canonical labels exist in your Linear>
-     - <e.g., docs/decisions/0001-bootstrap.md dated 2026-04-15>
+     - <e.g., docs/decisions/0001-setup.md dated 2026-04-15>
    What's your goal?"
    
    - "**Sync me locally — onboard me without changing anything
@@ -239,7 +239,7 @@ B. ASK ME ONE BATCHED ROUND OF QUESTIONS
      tracker config, verify my auth, then exit. Recommended if you're
      joining an existing project."
        → LOCAL SYNC mode. Skip all §C writes to shared files. Skip all
-         §D tracker writes. Only write per-machine memory bootstrap.
+         §D tracker writes. Only write per-machine memory seed.
          Don't ask Q2-Q15 — just sync.
    
    - "**Complete the install** — some pieces look missing. Finish setup
@@ -255,7 +255,17 @@ B. ASK ME ONE BATCHED ROUND OF QUESTIONS
          PR for review; tracker changes happen immediately but only
          after explicit per-change confirmation.
    
-   - "**Re-bootstrap from scratch** — wipe existing config and start
+   - "**Upgrade to the current plugin version**" — read the installed
+     version from AGENTS.md and the current plugin version from
+     plugin.json. If installed < current, walk through migration files
+     between them and apply confirmed changes."
+       → UPGRADE mode. Skip §C/§D. Run §F instead. See §F for the
+         migration-walking flow.
+       
+       Only offer this option if installed-version < current-version.
+       If they match, skip this option from the menu.
+   
+   - "**Re-install from scratch** — wipe existing config and start
      over. (Destructive — affects everyone.)"
        → RE-INSTALL mode. Print the destructiveness warning. If they
          confirm, run the FRESH flow (full questions, full writes).
@@ -445,7 +455,7 @@ B. ASK ME ONE BATCHED ROUND OF QUESTIONS
 C. SCAFFOLD THE FILES
    Mode-aware behavior:
    - **LOCAL SYNC mode** (§B Q1 → "sync me locally"): SKIP this entire
-     section. Jump to memory bootstrap only (last bullet below) — write
+     section. Jump to memory seed only (last bullet below) — write
      `MEMORY.md` + `user_identity.md` + `project_current_state.md` +
      `reference_tracker.md` seeded from existing AGENTS.md + tracker
      config. Do NOT write shared files. Do NOT modify AGENTS.md /
@@ -492,7 +502,7 @@ C. SCAFFOLD THE FILES
      tracker-attached docs, create the equivalent initiative-document /
      project-document in §D instead. If the user picked "skip ADRs",
      don't write any placeholder.
-   - Memory bootstrap files at the path the agent's harness uses
+   - Memory seed files at the path the agent's harness uses
      (typically `~/.claude/projects/<slugified-workdir>/memory/` for
      Claude Code; consult the equivalent path for Codex or other
      agents): `MEMORY.md` + `user_identity.md` +
@@ -583,6 +593,70 @@ E. REPORT
        - "Continue with current cycle" (if they kept existing cadence)
        - "Try /defect to file a bug" (if they skipped planning entirely)
 
+F. APPLY UPGRADE MIGRATIONS (UPGRADE mode only)
+   Triggered when §B Q1 returned "Upgrade to the current plugin
+   version". Skip this phase in every other mode.
+
+   F.1 — IDENTIFY MIGRATIONS TO RUN
+   - Read the "Workflow version" field from `AGENTS.md` → "Tracker
+     destinations" section. This is the **installed version**.
+   - Read `plugin.json` from the plugin root for the **current
+     version**.
+   - Look in `migrations/` (next to this skill in the plugin) for every
+     `vX.Y.Z.md` file. Each has frontmatter with `from:` and `to:`
+     fields.
+   - Select migrations where `to:` > installed AND `to:` ≤ current.
+     Apply them in SemVer order from lowest `to:` to highest.
+   - If no migrations match (e.g., installed == current), report "No
+     upgrades available" and exit.
+
+   F.2 — WALK EACH MIGRATION WITH THE USER
+   For each migration, in order:
+   - Show the migration's "Summary" section.
+   - Show how many changes it contains and a one-line preview of each.
+   - Ask: "Apply this migration? (apply all / pick which to apply /
+     skip this version / abort upgrade)"
+   - If APPLY ALL: walk each change and apply per §F.3.
+   - If PICK: show changes one at a time, ask apply/skip for each.
+   - If SKIP THIS VERSION: move to the next migration; warn that
+     future migrations may depend on skipped state.
+   - If ABORT: stop the upgrade, report progress so far, exit.
+
+   F.3 — APPLY A SINGLE CHANGE
+   Read the change's `Scope` and `Automatable` fields.
+   - **Scope `plugin-internal`**: the plugin update already delivered
+     it. Acknowledge and move on; no user action.
+   - **Scope `local`**: apply to per-machine files only. No tracker
+     writes, no shared file writes. Confirm with the user before each
+     local file write.
+   - **Scope `team-wide`**: this affects shared config. Apply via a
+     branch + PR for file changes (per TEAM UPDATE mode rules). For
+     tracker writes (label renames, project moves), confirm per-write
+     before executing. **Idempotency check first** — if the target
+     state is already reached (e.g., label already renamed because
+     another collaborator did it), skip with "already done."
+   - Read the `Automatable` field:
+     - `yes`: apply mechanically with confirmation.
+     - `partial`: show a diff/preview first, then confirm.
+     - `no`: describe the action; the user does it manually.
+
+   F.4 — UPDATE THE WORKFLOW VERSION FIELD
+   After all migrations the user accepted are applied, update
+   `AGENTS.md` → "Tracker destinations" → "Workflow version" field
+   to the highest version that was fully applied (not skipped).
+
+   If any migration was partially applied or skipped, surface that in
+   the report: "Workflow version updated to v0.4.0 (v0.5.0 migration
+   skipped on user request — re-run setup to apply later)."
+
+   F.5 — REPORT
+   Same shape as §E, but specifically for migrations:
+   - Migrations applied (and the changes within each).
+   - Migrations skipped (and why).
+   - New installed version.
+   - Next prompt to run if anything new from the migrations needs
+     follow-up (e.g., "Try the new /standup skill" if v0.4.0 added one).
+
 Throughout, follow the rules in the spec verbatim. Two universal rules to
 double-check on every tracker call:
 - If the tracker MCP auto-assigns to the caller when `assignee` is omitted
@@ -605,7 +679,7 @@ This workflow is built on a few core convictions. They're worth understanding be
 1. **The hardest part of multi-person software is communication, not code.** A workflow that makes intent visible (tickets, ADRs, status updates) beats one that optimizes for individual throughput.
 2. **AI agents work best with explicit operating contracts.** Telling the agent "you're the DoE" with clear authority boundaries produces better results than treating it as an oracle that knows what to do.
 3. **Reviews catch things makers miss.** A draft that survives three orthogonal critiques (technical, product, design) is meaningfully more durable than one signed off by a single reviewer.
-4. **Process pays back proportionally to project complexity.** The triad-review + ADR overhead is overkill for a single-file script and essential for a multi-repo product. The bootstrap asks about operating mode so the overhead can scale.
+4. **Process pays back proportionally to project complexity.** The triad-review + ADR overhead is overkill for a single-file script and essential for a multi-repo product. The setup asks about operating mode so the overhead can scale.
 5. **The tracker is the source of truth, not chat.** Conversation context evaporates between sessions; tickets and ADRs persist.
 
 ### What this workflow does NOT prescribe
@@ -634,7 +708,7 @@ The triad reviewers are **reviewers, not scope-deciders.** When they recommend s
 
 ### Operating modes
 
-Pick one at bootstrap. Switchable later.
+Pick one at setup. Switchable later.
 
 - **PLANNER-ONLY** (recommended when there's a team of humans + agents): the agent drafts plans, dispatches reviewers, files tickets, monitors, files defects/ideas, posts status updates. Other humans / agents pick up implementation. The agent does NOT auto-execute implementation work unless explicitly delegated.
 - **SOLE-IC** (recommended for a solo founder + one agent): the agent executes every ticket end-to-end. Sequentially, one ticket at a time. Code → test → push → watch deploy → next ticket.
@@ -973,7 +1047,7 @@ This philosophy is optional — some projects have legitimate reasons for thick 
 
 ## §11 — Skill files (full SKILL.md contents)
 
-Each skill goes in `.claude/skills/<name>/SKILL.md` (Claude Code) and/or `.agents/skills/<name>/SKILL.md` (Codex and other agents that follow the SKILL.md convention). The bootstrap agent should:
+Each skill goes in `.claude/skills/<name>/SKILL.md` (Claude Code) and/or `.agents/skills/<name>/SKILL.md` (Codex and other agents that follow the SKILL.md convention). The setup agent should:
 1. Detect which agent CLI is configured in the workspace and write to the right path (or both, if the workspace uses multiple agents).
 2. Replace `<TRACKER_MCP_PREFIX>` in the skill templates with the actual MCP function prefix detected during introspection (e.g., `mcp__linear__`, `mcp__plugin_linear_linear__`, `mcp__atlassian__`).
 3. Replace tracker-specific placeholders (`<TEAM_OR_PROJECT_NAME>`, `<BUG_TRIAGE_PROJECT_ID>`, `<IDEAS_PROJECT_ID>`) with the IDs created in step D.
@@ -1113,12 +1187,12 @@ Omit sections that are genuinely empty. Don't pad with placeholders.
 
 ### 6. Resolve the destination
 
-Read `AGENTS.md` → "Tracker destinations" section (written by the bootstrap). It specifies how /defect should file:
+Read `AGENTS.md` → "Tracker destinations" section (written by the setup). It specifies how /defect should file:
 
 - **Mode `project`**: file into a specific project / team / view. The destination ID is in the section.
 - **Mode `triage`**: file into the tracker's built-in Triage inbox (Linear has this; Jira's equivalent is the default backlog).
 - **Mode `label`**: file as an unassigned issue with the configured bug label applied, no specific project.
-- **Mode `unset`** or no "Tracker destinations" section: the bootstrap was skipped or `/defect` wasn't configured. Ask the user where to file (single batched question, then write the choice back to AGENTS.md so this doesn't repeat).
+- **Mode `unset`** or no "Tracker destinations" section: the setup was skipped or `/defect` wasn't configured. Ask the user where to file (single batched question, then write the choice back to AGENTS.md so this doesn't repeat).
 
 ### 7. File via the tracker
 
@@ -1231,7 +1305,7 @@ The user types `/idea <description>` in chat. The description is everything afte
 
 4. **Resolve destination + file via the tracker.**
 
-   Read `AGENTS.md` → "Tracker destinations" section (written by the bootstrap). It specifies how /idea should file:
+   Read `AGENTS.md` → "Tracker destinations" section (written by the setup). It specifies how /idea should file:
    - Mode `project`: file into the configured ideas project / view.
    - Mode `label`: file as an unassigned issue with the configured ideas label applied, no specific project.
    - Mode `unset` or missing section: ask the user where ideas should go (single batched question, then write back to AGENTS.md so this doesn't repeat).
@@ -1327,7 +1401,7 @@ The agent harness stores auto-memory per-workspace. The exact path depends on th
 ## Your role: Director of Engineering (DoE)
 
 <Operating mode: planner-only / sole-IC / hybrid. See §2 of
-team-process-bootstrap.md for definitions.>
+team-process-spec.md for definitions.>
 
 The overall process: the human(s) set WHAT, the CTO + CPO + CDO triad
 reviews proposals in parallel as subagents, their HOW guidance feeds back
@@ -1375,9 +1449,9 @@ shipped platform with screenshots. NEVER close while a deploy is failing.
 
 ## Tracker destinations
 
-> This section is the canonical signature that the bootstrap has run
+> This section is the canonical signature that the setup has run
 > here. `/defect` and `/idea` read it to know where to file. Edit via
-> the bootstrap's TEAM UPDATE mode, not by hand.
+> the setup's TEAM UPDATE mode, not by hand.
 
 - **Tracker type:** Linear / Jira / GitHub Issues / Notion
 - **Workspace / team:** `<name>` (id: `<id>`)
@@ -1391,7 +1465,7 @@ shipped platform with screenshots. NEVER close while a deploy is failing.
   - Detail: `<e.g., "2-week cycles, currently on Cycle 14">` or
     `<"M0 — Workflow Adoption project with 5 phase milestones">`
 - **Issue ID prefix:** `PROJ-NN`
-- **Bootstrap version:** `<aew-version>` installed by `<contributor>` on `<date>`
+- **Workflow version:** `<aew-version>` installed by `<contributor>` on `<date>`
 
 ## Docs location
 
@@ -1491,7 +1565,7 @@ parent folder. Every repo's `.gitignore` includes `/.worktrees/`.
 | Deploy config | <path> |
 ```
 
-### 13.3 — Initial `MEMORY.md` bootstrap
+### 13.3 — Initial `MEMORY.md` seed
 
 ```markdown
 - [User identity](user_identity.md) — <role>, <handle>, <email>
@@ -1548,18 +1622,18 @@ Use the task-tracking tool (TaskCreate / equivalent) to mark each as it lands.
 - [ ] **A6.** Detect stack-hint files (package.json, Cargo.toml, build.gradle, etc.).
 - [ ] **A7.** Detect docs storage signals (docs/ folder, dedicated docs repo, tracker documents in use, top-level PRD/architecture files).
 - [ ] **A8.** Read tracker state (projects, sprints/cycles, labels, built-in Triage availability, active issue count per project) — DON'T WRITE.
-- [ ] **A9.** Detect **workflow installation state** (FRESH / PARTIAL / INSTALLED) by scanning for: AGENTS.md "Tracker destinations" section, bootstrap ADR, canonical labels co-existing in tracker, per-repo AGENTS.md files.
+- [ ] **A9.** Detect **workflow installation state** (FRESH / PARTIAL / INSTALLED) by scanning for: AGENTS.md "Tracker destinations" section, setup ADR, canonical labels co-existing in tracker, per-repo AGENTS.md files.
 - [ ] **A10.** Classify the workspace shape: GREENFIELD / EXISTING-COMPATIBLE / EXISTING-DIVERGENT / AMBIGUOUS.
 
 **Phase B — Ask (single batched turn):**
-- [ ] **B1.** If install state is PARTIAL/INSTALLED, ask the scope question first (sync me / complete / team update / re-bootstrap). If FRESH, ask workspace classification confirmation.
+- [ ] **B1.** If install state is PARTIAL/INSTALLED, ask the scope question first (sync me / complete / team update / re-install). If FRESH, ask workspace classification confirmation.
 - [ ] **B2.** Ask follow-up questions only as needed by the chosen mode:
-       - LOCAL SYNC: no further questions; skip to memory bootstrap.
+       - LOCAL SYNC: no further questions; skip to memory seed.
        - COMPLETE-PARTIAL: only the questions whose answers aren't already in AGENTS.md / tracker.
        - TEAM UPDATE / FRESH / RE-INSTALL: full Q2-Q15 (skip any auto-detected).
 
 **Phase C — Scaffold files (mode-dependent):**
-- [ ] **C1.** LOCAL SYNC: skip to memory bootstrap (C8) only.
+- [ ] **C1.** LOCAL SYNC: skip to memory seed (C8) only.
 - [ ] **C2.** Root `AGENTS.md` from §13.1, including "Tracker destinations" + "Docs location" sections.
 - [ ] **C3.** `CLAUDE.md` compatibility shim.
 - [ ] **C4.** Per-repo / per-module `AGENTS.md` stubs from §13.2.
@@ -1567,7 +1641,7 @@ Use the task-tracking tool (TaskCreate / equivalent) to mark each as it lands.
 - [ ] **C6.** `.claude/skills/idea/SKILL.md` from §11.2.
 - [ ] **C7.** Add `/.worktrees/` to `.gitignore` if using worktrees.
 - [ ] **C8.** ADR placeholder at the user-chosen docs location (skip if user picked tracker-attached or "skip ADRs").
-- [ ] **C9.** Memory bootstrap (always): `MEMORY.md` + `user_identity.md` + `project_current_state.md` + `reference_tracker.md`. In LOCAL SYNC mode, seed these from existing AGENTS.md + tracker state.
+- [ ] **C9.** Memory seed (always): `MEMORY.md` + `user_identity.md` + `project_current_state.md` + `reference_tracker.md`. In LOCAL SYNC mode, seed these from existing AGENTS.md + tracker state.
 
 **Phase D — Tracker writes (only what the user approved; skip in LOCAL SYNC):**
 - [ ] **D1.** Create /defect destination project ONLY if user picked "create new" in Q9.
@@ -1589,7 +1663,7 @@ This spec is intentionally opinionated. Some pieces are universal, others are co
 ### Safe to change
 
 - **Tracker.** Linear-style hierarchy is the model, but the workflow adapts to GitHub Issues, Jira, Notion, or anything with a queryable API.
-- **Stack.** Stack-agnostic. The skill files have generic placeholders; the bootstrap fills them in based on what it detects.
+- **Stack.** Stack-agnostic. The skill files have generic placeholders; the setup fills them in based on what it detects.
 - **Sprint cadence.** The default is 10-day sprints with 5 phase milestones. Shorter / longer sprints work fine — adjust the phase milestones to fit.
 - **Triad composition.** CTO + CPO + CDO is the default. Drop CDO for non-design-heavy projects. Add Staff <platform> reviewers for complex platform-specific decisions. Add Legal / Security for regulated domains.
 - **Operating mode.** PLANNER-ONLY / SOLE-IC / HYBRID — pick whichever fits the team. Switch any time.
@@ -1609,7 +1683,7 @@ If you find yourself ignoring §9 (working agreements) for more than one sprint,
 
 ---
 
-## §17 — Final notes for the bootstrap agent
+## §17 — Final notes for the setup agent
 
 After running the setup checklist:
 - Print a clean summary of what you created.

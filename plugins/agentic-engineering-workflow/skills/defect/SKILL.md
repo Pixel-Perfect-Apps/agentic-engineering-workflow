@@ -127,12 +127,12 @@ Omit sections that are genuinely empty. Don't pad with placeholders.
 
 ### 6. Resolve the destination from AGENTS.md
 
-Read `AGENTS.md` → "Tracker destinations" section. The bootstrap writes it; it tells you where /defect should file:
+Read `AGENTS.md` → "Tracker destinations" section. The setup writes it; it tells you where /defect should file:
 
 - **Mode `project`**: file into a specific project / team / view. The destination ID is in the section.
 - **Mode `triage`**: file into the tracker's built-in Triage inbox (Linear teams support this; Jira's equivalent is the default backlog).
 - **Mode `label`**: file as an unassigned issue with the configured bug label applied, no specific project.
-- **Mode `unset`** or no "Tracker destinations" section: the bootstrap was skipped or `/defect` wasn't configured. Ask the user where to file (single batched question), then write the choice back to AGENTS.md so this doesn't repeat.
+- **Mode `unset`** or no "Tracker destinations" section: the setup was skipped or `/defect` wasn't configured. Ask the user where to file (single batched question), then write the choice back to AGENTS.md so this doesn't repeat.
 
 ### 7. File via the tracker
 

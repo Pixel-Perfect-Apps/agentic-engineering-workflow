@@ -60,7 +60,7 @@ Do NOT use this skill for `/defect` reports or feature requests the user wants i
 
 4. **Resolve destination from AGENTS.md, then file.**
 
-   Read `AGENTS.md` → "Tracker destinations" section. The bootstrap writes it; it tells you where /idea should file:
+   Read `AGENTS.md` → "Tracker destinations" section. The setup writes it; it tells you where /idea should file:
    - Mode `project`: file into the configured ideas project / view. ID is in the section.
    - Mode `label`: file as an unassigned issue with the configured ideas label applied, no specific project.
    - Mode `unset` or missing section: ask the user where ideas should go (single batched question), then write the choice back to AGENTS.md.

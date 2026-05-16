@@ -11,7 +11,7 @@ A portable, opinionated workflow for software teams where an AI coding agent is 
 
 Drop it into any workspace and you get:
 
-- 🎯 **A bootstrap skill** that scaffolds `AGENTS.md`, a `CLAUDE.md` shim, ADR structure, memory bootstrap, tracker projects + labels — all adapted to your project's actual layout (greenfield, monorepo, or single-repo).
+- 🎯 **A setup-agentic-workflow skill** that scaffolds `AGENTS.md`, a `CLAUDE.md` shim, ADR structure, memory seed, tracker projects + labels — all adapted to your project's actual layout (greenfield, monorepo, or single-repo).
 - 🐛 **`/defect`** — fire-and-forget bug capture from chat. Infers platform, build, repro steps, severity, root-cause hypothesis, and likely-culprit files. Files a tracker ticket with all of it.
 - 💡 **`/idea`** — parking-lot idea capture. Infers cross-repo scope, drafts a mini-spec, files it for future sprint triage.
 - 📚 **A full workflow spec** (sprint phases, triad review pattern, contract-lock discipline, working agreements, common pitfalls) you can read once and reference forever.
@@ -27,7 +27,7 @@ Tracker-agnostic (Linear, GitHub Issues, Jira, Notion). Stack-agnostic. Agent-ag
 /plugin install agentic-engineering-workflow@agentic-engineering-workflow
 ```
 
-After install, ask your agent to **"bootstrap the agentic engineering workflow"** in any workspace, or invoke `/agentic-engineering-workflow:bootstrap` directly.
+After install, ask your agent to **"set up the agentic engineering workflow"** in any workspace, or invoke `/agentic-engineering-workflow:setup-agentic-workflow` directly.
 
 `/defect` and `/idea` are available globally after install — no project-by-project setup.
 
@@ -45,28 +45,28 @@ cp -r /tmp/aew/plugins/agentic-engineering-workflow/skills/* .agents/skills/
 rm -rf /tmp/aew
 ```
 
-Then point your agent at `.agents/skills/bootstrap/SKILL.md` to kick off the bootstrap. The skill content is generic — it works for any agent that follows SKILL.md-style instructions.
+Then point your agent at `.agents/skills/setup-agentic-workflow/SKILL.md` to kick off the setup. The skill content is generic — it works for any agent that follows SKILL.md-style instructions.
 
 **B. Drop-in spec only (no skills, any agent):**
 
-Save just the spec into your workspace and paste the bootstrap prompt to a fresh agent session:
+Save just the spec into your workspace and paste the setup prompt to a fresh agent session:
 
 ```bash
-curl -O https://raw.githubusercontent.com/Pixel-Perfect-Apps/agentic-engineering-workflow/main/plugins/agentic-engineering-workflow/skills/bootstrap/references/team-process-spec.md
+curl -O https://raw.githubusercontent.com/Pixel-Perfect-Apps/agentic-engineering-workflow/main/plugins/agentic-engineering-workflow/skills/setup-agentic-workflow/references/team-process-spec.md
 ```
 
-Then open the file, find the `⌜ PROMPT TO PASTE ⌟` block, and paste it to your agent. The agent reads the spec and executes the same five-phase bootstrap. You miss the `/defect` and `/idea` slash commands but the rest works.
+Then open the file, find the `⌜ PROMPT TO PASTE ⌟` block, and paste it to your agent. The agent reads the spec and executes the same five-phase setup. You miss the `/defect` and `/idea` slash commands but the rest works.
 
 ---
 
-## What the bootstrap does
+## What the setup does
 
-The bootstrap is **inspection-first and consent-based.** It refuses to write to your tracker or files until it has shown you what it found and asked what you want.
+The setup is **inspection-first and consent-based.** It refuses to write to your tracker or files until it has shown you what it found and asked what you want.
 
 The flow:
 
-1. **Inspect, read-only.** Walks the file tree, queries the tracker (projects, sprints, labels, built-in Triage availability), looks for existing docs locations, and — critically — detects whether another collaborator has already run the bootstrap here.
-2. **Asks one batched round of questions.** Leads with either install-state scope (sync me locally / complete partial setup / update team config / re-bootstrap) if it detects existing setup, OR workspace-shape classification if fresh.
+1. **Inspect, read-only.** Walks the file tree, queries the tracker (projects, sprints, labels, built-in Triage availability), looks for existing docs locations, and — critically — detects whether another collaborator has already run the setup here.
+2. **Asks one batched round of questions.** Leads with either install-state scope (sync me locally / complete partial setup / update team config / re-install) if it detects existing setup, OR workspace-shape classification if fresh.
 3. **Scaffolds files** the user approved — `AGENTS.md` (with embedded "Tracker destinations" + "Docs location" sections), `CLAUDE.md` shim, per-module stubs, optional ADR placeholder at the chosen docs location, local memory files.
 4. **Writes to the tracker** only what the user explicitly approved — never auto-creates "M0 sprints" or planning artifacts; uses existing destinations when they match; adds labels only with consent.
 5. **Reports** what was written, what was skipped, and the next prompt to run.
@@ -77,11 +77,11 @@ Concretely, you'll end up with (depending on what you approved):
 - **Per-repo / per-module `AGENTS.md`** stubs at module boundaries.
 - **`CLAUDE.md`** compatibility shim pointing to `AGENTS.md` (for Claude Code's session start lookup).
 - **ADR placeholder** at your chosen docs location (in-repo `docs/decisions/`, dedicated docs repo, or tracker-attached — your call).
-- **Memory bootstrap** at the agent harness's per-workspace memory path.
+- **Memory seed** at the agent harness's per-workspace memory path.
 - **Tracker label taxonomy** — only the labels missing from your tracker, only if you opted in.
 - **Bug + idea destinations** wired to either existing projects (Linear built-in Triage, an existing "Bugs" project, etc.) or new ones — your call.
 
-If you're joining a project where the bootstrap already ran, the default is **LOCAL SYNC mode** — seeds your local memory from existing `AGENTS.md`, verifies your auth, exits. No shared writes.
+If you're joining a project where the setup already ran, the default is **LOCAL SYNC mode** — seeds your local memory from existing `AGENTS.md`, verifies your auth, exits. No shared writes.
 
 ### `/defect <description>`
 
@@ -95,7 +95,7 @@ The agent infers which repos / modules would need work to ship it, drafts a mini
 
 ## The workflow itself
 
-After bootstrap, your project runs on:
+After setup, your project runs on:
 
 - **Roles separated.** Humans own **WHAT**. The agent owns **HOW**. Disputes → human wins.
 - **Triad review.** Every sprint plan / cross-cutting decision gets reviewed in parallel by a CTO subagent (technical feasibility), CPO subagent (product priority — cites PRD), and CDO subagent (design fidelity — cites design system). Their HOW guidance is incorporated; their WHAT pushback becomes open questions for the human.
@@ -105,13 +105,13 @@ After bootstrap, your project runs on:
 - **Tracker as source of truth.** Not chat, not memory, not commits.
 - **Pre-close verification gate.** No sprint closes while a deploy is failing or verification is "deferred."
 
-Full spec: [`team-process-spec.md`](./plugins/agentic-engineering-workflow/skills/bootstrap/references/team-process-spec.md).
+Full spec: [`team-process-spec.md`](./plugins/agentic-engineering-workflow/skills/setup-agentic-workflow/references/team-process-spec.md).
 
 ---
 
 ## Operating modes
 
-Pick one at bootstrap (switchable later):
+Pick one at setup (switchable later):
 
 | Mode | When to use | The agent does |
 |---|---|---|
@@ -146,11 +146,23 @@ Pick one at bootstrap (switchable later):
 | Cursor | — | ⚠️ spec only | No SKILL.md mechanism; paste prompt manually |
 | Cline (VS Code) | — | ⚠️ spec only | Same as Cursor |
 | Aider | — | ⚠️ spec only | Same as Cursor |
-| Any AI chat | — | ⚠️ spec only | Paste the bootstrap prompt block |
+| Any AI chat | — | ⚠️ spec only | Paste the setup prompt block |
 
 If you've adopted this for another agent and found a clean install pattern worth documenting, please file an issue.
 
 ---
+
+## Upgrading
+
+When a new plugin version ships, `/plugin update` pulls it. Then run the setup skill again — it'll detect your existing install, read the version from `AGENTS.md` → "Tracker destinations" → "Workflow version", compare to the current plugin version, and offer **UPGRADE mode**:
+
+```
+/setup-agentic-workflow
+```
+
+The skill reads every `vX.Y.Z.md` migration file between your installed version and the current version, presents each migration's summary, then walks each change with you (apply all / pick / skip / abort). Confirmed changes get applied in-place — no re-install from scratch.
+
+Migration files live at [`plugins/agentic-engineering-workflow/migrations/`](./plugins/agentic-engineering-workflow/migrations/). Each documents what changed in that version, with scope (`local` / `team-wide` / `plugin-internal`) and automatability (`yes` / `partial` / `no`) so the setup knows what's safe to apply mechanically vs what needs your judgment.
 
 ## License
 
@@ -163,10 +175,12 @@ SemVer. See [`CHANGELOG.md`](./CHANGELOG.md) for release history.
 To cut a new release as a maintainer:
 
 ```bash
-scripts/release.sh 0.2.0
+scripts/release.sh 0.3.0
 ```
 
-The script bumps `version` in both manifests, promotes the `[Unreleased]` section in `CHANGELOG.md`, commits, tags `v0.2.0`, pushes, and the `.github/workflows/release.yml` workflow creates the GitHub Release with extracted changelog notes.
+The script bumps `version` in both manifests, promotes the `[Unreleased]` section in `CHANGELOG.md`, commits, tags `v0.3.0`, pushes, and the `.github/workflows/release.yml` workflow creates the GitHub Release with extracted changelog notes.
+
+If the release changes anything that affects existing installations, also write a migration file in `plugins/agentic-engineering-workflow/migrations/vX.Y.Z.md` so users can upgrade incrementally. See [`RELEASING.md`](./RELEASING.md) for format + guidance.
 
 ---
 

@@ -44,10 +44,54 @@ The release workflow handles the GitHub Release creation.
 | Bump | When to use |
 |---|---|
 | **PATCH** (0.1.0 → 0.1.1) | Bug fixes in skill content; wording tweaks; doc clarifications; broken-link fixes. No behavior change for users. |
-| **MINOR** (0.1.0 → 0.2.0) | New skills added; new templates; new sections in the spec; new bootstrap behaviors that don't break existing flows. Backwards-compatible additions. |
+| **MINOR** (0.1.0 → 0.2.0) | New skills added; new templates; new sections in the spec; new setup behaviors that don't break existing flows. Backwards-compatible additions. |
 | **MAJOR** (0.x.x → 1.0.0+) | Breaking changes — removed skills, renamed slash commands, restructured spec sections referenced by other docs, changes to AGENTS.md template structure that existing installations depend on. |
 
 The plugin is pre-1.0 (`0.x.x`); some breaking changes are allowed in MINOR bumps until 1.0. Once we hit 1.0, strict SemVer.
+
+## Migration files
+
+Whenever a release changes anything that affects existing installations, ship a migration file in `plugins/agentic-engineering-workflow/migrations/v<this-version>.md`. The setup skill walks these in version order when a user runs UPGRADE mode, applying confirmed changes incrementally so users don't have to re-install from scratch.
+
+**When to write a migration:**
+- Renamed canonical labels
+- New required AGENTS.md sections
+- New skill files that should land in user installs
+- Removed / deprecated skills
+- Renamed slash commands
+- Behavior changes that need user awareness
+- Anything that requires the user to know "here's what changed for you"
+
+**When you can skip writing a migration:**
+- Pure plugin-internal refactor that users don't observe
+- Doc-only changes (typo fixes, wording clarifications)
+- Bug fixes that restore correct behavior without changing what the user does
+
+**If unsure: err on the side of writing one.** Empty/minimal migrations are still useful — they document that "this version landed but nothing user-visible changed." See `plugins/agentic-engineering-workflow/migrations/README.md` for the file format spec and `v0.3.0.md` for the meta-migration that introduced the system.
+
+**Format reminder:**
+
+```markdown
+---
+from: <previous-version>
+to: <this-version>
+date: YYYY-MM-DD
+---
+
+# Migration vX.Y.Z
+
+## Summary
+<what this migration does at a high level>
+
+## Changes
+
+### <change-type>: <short title>
+**Scope:** local | team-wide | plugin-internal
+**Automatable:** yes | partial | no
+**Action:** <what to do>
+```
+
+The release.sh script does NOT yet validate that a migration file exists for the new version. Maintainer convention for now: write one when relevant.
 
 ## Why pin a version?
 
