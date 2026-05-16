@@ -137,11 +137,18 @@ A. INTROSPECT THE WORKSPACE
    Another collaborator may already have run the setup. Detect this
    before writing anything. Check for these signatures:
    - Root `AGENTS.md` contains the section heading `## Tracker
-     destinations` (this is the canonical marker — it's the section
-     /defect and /idea read from). If present, the setup was at
-     least partially run here.
-   - A `*/decisions/0001-setup.md` ADR exists noting workflow
-     adoption.
+     destinations` (this is the **current-format marker** — it's the
+     section /defect and /idea read from). If present, the install is
+     current-format and at least partially complete.
+   - **Legacy-format signature:** AGENTS.md contains an older section
+     heading like `## Tracker — Linear` (or similar) with concrete
+     team / project / workspace IDs but NO `## Tracker destinations`
+     section. This signals a complete v0.1.x install in the old
+     format — NOT a partial install. It should route to UPGRADE
+     mode (via the v0.2.0 migration) rather than COMPLETE-PARTIAL.
+   - A `*/decisions/0001-*.md` ADR exists noting workflow adoption
+     (filename may be `0001-bootstrap.md` for v0.1.x installs or
+     `0001-setup.md` for v0.2.0+ installs — both count).
    - Tracker has 3+ of the canonical labels co-existing (`kind:spec`,
      `sprint:s1`, `area:*`, `alarm:deploy-failure`, `gate:beta-ready`)
      — these together strongly suggest the workflow has been adopted
@@ -153,15 +160,25 @@ A. INTROSPECT THE WORKSPACE
    
    Classify the **install state**:
    - **FRESH** — no signatures found. Use the full setup flow.
-   - **PARTIAL** — some signatures present, others missing. Someone
-     started but didn't finish, or pieces have rotted.
-   - **INSTALLED** — all key signatures present. Another collaborator
-     has fully set this up; you're likely joining a project that
-     already uses this workflow.
+   - **LEGACY** — legacy-format signature present (older AGENTS.md
+     section heading, or older ADR filename) but current-format
+     marker missing. This is a complete v0.1.x install, not a
+     half-finished one. Default version: `0.1.x`. Route to UPGRADE
+     mode — the v0.2.0 migration handles the section rename + new
+     fields, then later migrations apply.
+   - **PARTIAL** — current-format signatures present but key fields
+     missing (e.g., "Tracker destinations" section exists but lacks
+     a `/defect` mode, or only some collaborator-owned files exist).
+     Someone started a current-format install but didn't finish.
+   - **INSTALLED** — current-format signatures all present + version
+     field reads ≤ current. Another collaborator has fully set this
+     up; you're likely joining a project that already uses this
+     workflow. If installed-version < current-plugin-version, offer
+     UPGRADE in §B Q1.
 
-   For PARTIAL or INSTALLED, capture **what's already configured** so
-   §B can offer concrete sync/onboarding options. Don't overwrite —
-   read.
+   For LEGACY / PARTIAL / INSTALLED, capture **what's already
+   configured** so §B can offer concrete sync/onboarding/upgrade
+   options. Don't overwrite — read.
 
    What to look at — ISSUE TRACKER:
    - Tracker MCP availability: try in this order — Linear
@@ -172,7 +189,8 @@ A. INTROSPECT THE WORKSPACE
      yet). Capture:
        - Teams / workspaces / projects (names + IDs).
        - Whether the tracker has a built-in "Triage" inbox (Linear teams
-         do; check `mcp__linear__get_team` for `triageEnabled`).
+         do; check `mcp__linear__get_team` for `triageEnabled` — but
+         see caveat below if the MCP doesn't surface this field).
        - Active sprints / cycles / iterations / milestones / fix-versions
          (names + dates).
        - Existing labels / tags / components / issue types.
@@ -181,6 +199,13 @@ A. INTROSPECT THE WORKSPACE
        - Rough activity level (how many open issues per project). High
          activity = the team is actively using this tracker; low/none =
          it might be inherited or unused.
+   - **`triageEnabled` fallback:** if `get_team` doesn't return
+     `triageEnabled` (some Linear MCP builds don't expose it), fall
+     back in order: (1) check the team's URL pattern — Linear teams
+     with Triage have a `/triage` route accessible; (2) ask the user
+     in §B; (3) default to assuming Triage is enabled (Linear's
+     default for new teams). Surface the assumption in the §E report
+     so the user can correct it if wrong.
    - This inspection feeds the §B questions about destinations + cadence.
      **Do not write anything to the tracker in this phase.** Inspection
      is read-only.
@@ -220,6 +245,30 @@ B. ASK ME ONE BATCHED ROUND OF QUESTIONS
    Use the AskUserQuestion tool (or the platform's equivalent
    batched-question mechanism) in a SINGLE turn. Lead with the right
    anchor question based on **installation state** (from §A).
+
+   **If install state is LEGACY — anchor on the older-format detection:**
+
+   "I see an older-format install here (AGENTS.md uses
+   `## Tracker — Linear` style instead of the current
+   `## Tracker destinations`). Based on the format, this is likely
+   a v0.1.x install — complete by its era's standards but
+   out-of-date with the current plugin version.
+
+   I can run an UPGRADE that walks through migration files from
+   v0.1.x → current. The v0.2.0 migration handles the section
+   rename + new fields; later migrations layer on top. Nothing
+   destructive — each change is proposed for confirmation.
+
+   What would you like?"
+
+   - "**Upgrade through migrations (recommended).**"
+       → UPGRADE mode. Run §F starting from the v0.2.0 migration.
+   - "**Just sync me locally, leave the team config alone.**"
+       → LOCAL SYNC mode. Don't run any migrations; treat the legacy
+         install as authoritative for local config seeding.
+   - "**Re-install from scratch.** (Destructive — replaces all
+     existing config.)"
+       → RE-INSTALL mode with destructiveness warning.
 
    **If install state is PARTIAL or INSTALLED — anchor on scope first:**
 
@@ -526,6 +575,34 @@ D. WRITE TO THE TRACKER (only what the user approved in §B)
      check: re-verify each target doesn't already exist before
      creating. Trackers are shared and other collaborators may have
      created the same things in parallel.
+
+   **Tracker MCP capability caveats (Linear in particular):**
+   - **No project / document delete.** Linear's MCP exposes
+     `delete_attachment`, `delete_comment`, `delete_status_update` —
+     but NOT `delete_project` or `delete_document`. If a previous
+     setup created a project (e.g., an unwanted "M0 / Current Sprint"
+     from an older install) and you want to retire it, the bootstrap
+     can ONLY archive / cancel / tombstone it via state update
+     (project state → "canceled" or equivalent), OR surface a
+     manual-step recommendation: "Open Linear and delete the project
+     manually." NEVER claim the bootstrap deleted something it can't.
+   - **`triageEnabled` may not surface on `get_team`.** Some MCP
+     builds don't expose this field even though Linear teams support
+     built-in Triage. Fallback order: (1) check `triageEnabled` if
+     returned; (2) if absent, ask the user via §B Q9 sub-prompt: "I
+     can't tell from the MCP whether your Linear team has built-in
+     Triage. Does it?" (3) If user doesn't know either, default to
+     assuming it exists (Linear's default for new teams) but note
+     this assumption in the report.
+   - **List operations may paginate.** Don't trust a single
+     `list_projects` / `list_cycles` / `list_issue_labels` call to be
+     exhaustive — check for pagination tokens.
+   - **MCP-specific delete behavior may vary across tracker
+     types.** Jira allows deleting some object types; Notion archives
+     pages instead of deleting; GitHub Issues are closable but
+     pages/projects aren't fully deletable via API in some cases.
+     Always reframe cleanup as the strongest non-destructive action
+     the tracker supports, and surface manual UI cleanup when needed.
 
    D.1 — Write the /defect destination
    Based on the user's answer to question 9:
