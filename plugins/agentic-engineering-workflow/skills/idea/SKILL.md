@@ -58,18 +58,23 @@ Do NOT use this skill for `/defect` reports or feature requests the user wants i
    <When this should come off the parking lot.>
    ```
 
-4. **File via the tracker.** Use whichever MCP / CLI is wired up in this workspace (Linear, Jira, GitHub Issues, Notion). The "Ideas / Backlog" project ID should be in `AGENTS.md` or a project memory file.
+4. **Resolve destination from AGENTS.md, then file.**
 
-   Universal call shape (adapt to your tracker):
+   Read `AGENTS.md` → "Tracker destinations" section. The bootstrap writes it; it tells you where /idea should file:
+   - Mode `project`: file into the configured ideas project / view. ID is in the section.
+   - Mode `label`: file as an unassigned issue with the configured ideas label applied, no specific project.
+   - Mode `unset` or missing section: ask the user where ideas should go (single batched question), then write the choice back to AGENTS.md.
+
+   Then call the tracker (Linear, Jira, GitHub Issues, Notion — whichever MCP / CLI is wired up):
 
    ```
    <tracker>.save_issue({
-     project / team / repo: "<Ideas / Backlog project ID>",
+     project / team / repo: <destination_id_or_null>,
      title: "<6-12 word descriptive, noun-led; no 'Idea:' prefix>",
      description: "<full mini-spec from step 3>",
      priority: 4,
      assignee: null,
-     labels: ["feature", "platform:<primary>"]
+     labels: ["feature", "platform:<primary>", <plus configured ideas-label if mode == "label">]
    })
    ```
 

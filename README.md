@@ -59,17 +59,29 @@ Then open the file, find the `⌜ PROMPT TO PASTE ⌟` block, and paste it to yo
 
 ---
 
-## What the bootstrap produces
+## What the bootstrap does
 
-A single skill turns any workspace into a structured project with:
+The bootstrap is **inspection-first and consent-based.** It refuses to write to your tracker or files until it has shown you what it found and asked what you want.
 
-- **`AGENTS.md`** at the root — the working guide your agent reads on every session start.
-- **Per-repo / per-module `AGENTS.md`** stubs at the module boundaries.
+The flow:
+
+1. **Inspect, read-only.** Walks the file tree, queries the tracker (projects, sprints, labels, built-in Triage availability), looks for existing docs locations, and — critically — detects whether another collaborator has already run the bootstrap here.
+2. **Asks one batched round of questions.** Leads with either install-state scope (sync me locally / complete partial setup / update team config / re-bootstrap) if it detects existing setup, OR workspace-shape classification if fresh.
+3. **Scaffolds files** the user approved — `AGENTS.md` (with embedded "Tracker destinations" + "Docs location" sections), `CLAUDE.md` shim, per-module stubs, optional ADR placeholder at the chosen docs location, local memory files.
+4. **Writes to the tracker** only what the user explicitly approved — never auto-creates "M0 sprints" or planning artifacts; uses existing destinations when they match; adds labels only with consent.
+5. **Reports** what was written, what was skipped, and the next prompt to run.
+
+Concretely, you'll end up with (depending on what you approved):
+
+- **`AGENTS.md`** at the root — the working guide your agent reads on every session start. Includes a "Tracker destinations" section that `/defect` and `/idea` read at runtime.
+- **Per-repo / per-module `AGENTS.md`** stubs at module boundaries.
 - **`CLAUDE.md`** compatibility shim pointing to `AGENTS.md` (for Claude Code's session start lookup).
-- **`docs/decisions/0001-bootstrap.md`** — the first ADR, marking workflow adoption.
-- **Memory bootstrap** (`user_identity.md`, `project_current_state.md`, `reference_tracker.md`) at the agent harness's per-workspace memory path.
-- **Tracker scaffolding** — "Bug Triage" + "Ideas / Backlog" projects, canonical label taxonomy (`bug`, `feature`, `improvement`, `kind:spec`, `sprint:s1`, `platform:*`, `area:*`, `blocker`, `alarm:deploy-failure`, `gate:beta-ready`).
-- **An initial "M0 / Current Sprint"** document with a placeholder body.
+- **ADR placeholder** at your chosen docs location (in-repo `docs/decisions/`, dedicated docs repo, or tracker-attached — your call).
+- **Memory bootstrap** at the agent harness's per-workspace memory path.
+- **Tracker label taxonomy** — only the labels missing from your tracker, only if you opted in.
+- **Bug + idea destinations** wired to either existing projects (Linear built-in Triage, an existing "Bugs" project, etc.) or new ones — your call.
+
+If you're joining a project where the bootstrap already ran, the default is **LOCAL SYNC mode** — seeds your local memory from existing `AGENTS.md`, verifies your auth, exits. No shared writes.
 
 ### `/defect <description>`
 

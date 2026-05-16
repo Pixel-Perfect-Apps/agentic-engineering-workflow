@@ -125,25 +125,34 @@ Description structure:
 
 Omit sections that are genuinely empty. Don't pad with placeholders.
 
-### 6. File via the tracker
+### 6. Resolve the destination from AGENTS.md
+
+Read `AGENTS.md` → "Tracker destinations" section. The bootstrap writes it; it tells you where /defect should file:
+
+- **Mode `project`**: file into a specific project / team / view. The destination ID is in the section.
+- **Mode `triage`**: file into the tracker's built-in Triage inbox (Linear teams support this; Jira's equivalent is the default backlog).
+- **Mode `label`**: file as an unassigned issue with the configured bug label applied, no specific project.
+- **Mode `unset`** or no "Tracker destinations" section: the bootstrap was skipped or `/defect` wasn't configured. Ask the user where to file (single batched question), then write the choice back to AGENTS.md so this doesn't repeat.
+
+### 7. File via the tracker
 
 The tracker MCP / CLI to use depends on what's wired up in this workspace. Detect from available tools:
 
-- **Linear MCP** (most common): `mcp__linear__save_issue` / `mcp__plugin_linear_linear__save_issue` / `mcp__claude_ai_Linear__save_issue` — try whichever responds. Project ID for "Bug Triage" should be in `AGENTS.md` or a project memory file.
-- **Jira MCP**: `mcp__atlassian__createIssue` or equivalent. Project key + issue type "Bug".
+- **Linear MCP** (most common): `mcp__linear__save_issue` / `mcp__plugin_linear_linear__save_issue` / `mcp__claude_ai_Linear__save_issue` — try whichever responds.
+- **Jira MCP**: `mcp__atlassian__createIssue` or equivalent. Issue type "Bug".
 - **GitHub Issues**: `gh issue create --repo <org>/<repo> --title "..." --body "..." --label bug,platform:<X>`.
-- **Notion MCP**: `mcp__notion__createPage` with a Bug Triage parent.
+- **Notion MCP**: `mcp__notion__createPage` with the configured parent.
 
-Universal call shape (adapt to your tracker):
+Universal call shape (adapt to your tracker + the destination mode resolved in step 6):
 
 ```
 <tracker>.save_issue({
-  project / team / repo: "<Bug Triage project ID>",
+  project / team / repo: <destination_id_or_null>,
   title: "<5-10 word noun-led summary>",
   description: "<full markdown above>",
   priority: <1|2|3|4>,
   assignee: null,
-  labels: ["bug", "platform:<primary>"]
+  labels: ["bug", "platform:<primary>", <plus configured bug-label if mode == "label">]
 })
 ```
 

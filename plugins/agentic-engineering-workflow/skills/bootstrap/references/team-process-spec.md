@@ -98,7 +98,7 @@ A. INTROSPECT THE WORKSPACE
    potential multi-repo layout). DO NOT skip this — the rest of the
    workflow depends on you understanding what you're looking at.
    
-   What to look at:
+   What to look at — FILESYSTEM:
    - Folder contents at the top level. Is it empty, near-empty (only
      dotfiles), or does it contain real code / repos / config?
    - Workspace layout: single repo, multi-repo monorepo (sibling folders
@@ -107,10 +107,6 @@ A. INTROSPECT THE WORKSPACE
      `nx.json`, pnpm-workspace.yaml), or something else.
    - Git hosting: `gh auth status` for GitHub, `glab auth status` for
      GitLab, etc. Capture the org/group + repo names.
-   - Issue tracker MCP availability: try in this order — Linear
-     (mcp__linear__*, mcp__plugin_linear_linear__*, mcp__claude_ai_Linear__*),
-     Jira (mcp__atlassian__*, mcp__jira__*), Notion (mcp__notion__*),
-     Plain GitHub Issues via `gh issue`. Use whichever responds first.
    - Local git identity: `git config user.name` + `git config user.email`.
    - Existing config files that hint at the stack: package.json,
      Cargo.toml, pyproject.toml, Package.swift, build.gradle, go.mod,
@@ -121,6 +117,73 @@ A. INTROSPECT THE WORKSPACE
    - Existing AGENTS.md / CLAUDE.md / .claude/ / .agents/ — DO NOT
      clobber prior setup; merge or back up before overwriting.
    - DO NOT print any secrets you encounter — flag them and move on.
+
+   What to look at — DOCS STORAGE:
+   - Existing in-repo docs folders: `docs/`, `documentation/`, `wiki/`,
+     and especially `docs/decisions/` or `decisions/` (ADRs).
+   - Existing dedicated docs repo if multi-repo monorepo: look for
+     `<project>-docs`, `<project>-handbook`, `docs`, etc. as sibling
+     folders or in the same GitHub org.
+   - Existing GitHub Wiki on any repo (`gh api repos/<owner>/<repo> --jq
+     '.has_wiki'`).
+   - Whether the tracker has a documents feature in active use (Linear
+     teams + projects can have documents; check `list_documents` if the
+     MCP supports it).
+   - Whether there's a `.docx` / `.pdf` / `.md` already at a top-level
+     `PRD.docx` or `ARCHITECTURE.md` — these signal where the team
+     already stashes long-form docs.
+
+   What to look at — WORKFLOW INSTALLATION STATE (CRITICAL):
+   Another collaborator may already have run the bootstrap. Detect this
+   before writing anything. Check for these signatures:
+   - Root `AGENTS.md` contains the section heading `## Tracker
+     destinations` (this is the canonical marker — it's the section
+     /defect and /idea read from). If present, the bootstrap was at
+     least partially run here.
+   - A `*/decisions/0001-bootstrap.md` ADR exists noting workflow
+     adoption.
+   - Tracker has 3+ of the canonical labels co-existing (`kind:spec`,
+     `sprint:s1`, `area:*`, `alarm:deploy-failure`, `gate:beta-ready`)
+     — these together strongly suggest the workflow has been adopted
+     there.
+   - Per-repo `AGENTS.md` files exist at module boundaries (in
+     multi-repo or workspace-monorepo layouts).
+   - The tracker has projects matching workflow names ("Bug Triage",
+     "Ideas / Backlog", or specifically configured destinations).
+   
+   Classify the **install state**:
+   - **FRESH** — no signatures found. Use the full bootstrap flow.
+   - **PARTIAL** — some signatures present, others missing. Someone
+     started but didn't finish, or pieces have rotted.
+   - **INSTALLED** — all key signatures present. Another collaborator
+     has fully set this up; you're likely joining a project that
+     already uses this workflow.
+
+   For PARTIAL or INSTALLED, capture **what's already configured** so
+   §B can offer concrete sync/onboarding options. Don't overwrite —
+   read.
+
+   What to look at — ISSUE TRACKER:
+   - Tracker MCP availability: try in this order — Linear
+     (mcp__linear__*, mcp__plugin_linear_linear__*, mcp__claude_ai_Linear__*),
+     Jira (mcp__atlassian__*, mcp__jira__*), Notion (mcp__notion__*),
+     Plain GitHub Issues via `gh issue`. Use whichever responds first.
+   - If a tracker is available, **read its current state** (don't write
+     yet). Capture:
+       - Teams / workspaces / projects (names + IDs).
+       - Whether the tracker has a built-in "Triage" inbox (Linear teams
+         do; check `mcp__linear__get_team` for `triageEnabled`).
+       - Active sprints / cycles / iterations / milestones / fix-versions
+         (names + dates).
+       - Existing labels / tags / components / issue types.
+       - Issue ID prefix in use (PROJ-NN, etc.) — derive from any recent
+         issue.
+       - Rough activity level (how many open issues per project). High
+         activity = the team is actively using this tracker; low/none =
+         it might be inherited or unused.
+   - This inspection feeds the §B questions about destinations + cadence.
+     **Do not write anything to the tracker in this phase.** Inspection
+     is read-only.
 
    Then **classify the workspace** into one of these scenarios. This
    classification drives every downstream decision:
@@ -155,11 +218,50 @@ A. INTROSPECT THE WORKSPACE
 
 B. ASK ME ONE BATCHED ROUND OF QUESTIONS
    Use the AskUserQuestion tool (or the platform's equivalent
-   batched-question mechanism) in a SINGLE turn. Lead with the
-   classification confirmation so we anchor on the right starting point
-   before drilling into details.
+   batched-question mechanism) in a SINGLE turn. Lead with the right
+   anchor question based on **installation state** (from §A).
 
-   **Question 1 (ALWAYS) — classification confirmation:**
+   **If install state is PARTIAL or INSTALLED — anchor on scope first:**
+
+   Show concrete evidence of what's already configured, then ask the
+   user how they want to engage:
+   
+   "The agentic-engineering-workflow looks <partially/fully> installed
+   here. I see:
+     - <e.g., AGENTS.md with Tracker destinations: Linear team 'Eng',
+       /defect → 'Triage' (built-in)>
+     - <e.g., 12 of the canonical labels exist in your Linear>
+     - <e.g., docs/decisions/0001-bootstrap.md dated 2026-04-15>
+   What's your goal?"
+   
+   - "**Sync me locally — onboard me without changing anything
+     shared.** Seed my local memory from the existing AGENTS.md +
+     tracker config, verify my auth, then exit. Recommended if you're
+     joining an existing project."
+       → LOCAL SYNC mode. Skip all §C writes to shared files. Skip all
+         §D tracker writes. Only write per-machine memory bootstrap.
+         Don't ask Q2-Q15 — just sync.
+   
+   - "**Complete the install** — some pieces look missing. Finish setup
+     for the team."
+       → COMPLETE-PARTIAL mode. Identify the gap; ask only the §B
+         questions whose answers aren't already in AGENTS.md or the
+         tracker. Show a diff before any team-affecting writes.
+   
+   - "**Update the team's setup** — make intentional changes that
+     everyone will see."
+       → TEAM UPDATE mode. Full §B question flow with current values
+         pre-filled as defaults. Changes to AGENTS.md go via a branch +
+         PR for review; tracker changes happen immediately but only
+         after explicit per-change confirmation.
+   
+   - "**Re-bootstrap from scratch** — wipe existing config and start
+     over. (Destructive — affects everyone.)"
+       → RE-INSTALL mode. Print the destructiveness warning. If they
+         confirm, run the FRESH flow (full questions, full writes).
+
+   **If install state is FRESH — anchor on workspace classification:**
+
    Show what you observed + your best guess + a "no, it's something
    else" option. Phrase it concretely. Example wordings:
    
@@ -199,15 +301,20 @@ B. ASK ME ONE BATCHED ROUND OF QUESTIONS
    **Questions 2-N (only if not detected) — remaining setup:**
    For each of the below, SKIP the question if you already detected the
    answer in step A. Only ask what you genuinely don't know.
+
+   For tracker-related questions (Q3, Q9, Q10, Q11): if your §A
+   inspection found existing state, **show what you observed + the
+   inferred mapping + a "don't write anything" option**. Don't ask the
+   user to invent destinations from scratch when they may already have
+   them.
    
    2. **Project name + short slug** (used in branch names, ADR
       filenames, etc.).
-   3. **Issue tracker confirmation** — which tracker, and what are the
-      default project / view names you want for "Bug Triage" and
-      "Ideas / Backlog"?
+   3. **Issue tracker confirmation** — confirm the detected tracker.
+      Skip if obvious.
    4. **Issue ID prefix** (e.g., PROJ-NN — used in branch names + PR
       trailers). For trackers that auto-generate IDs, what's the
-      format?
+      format? Skip if you derived it from an existing issue.
    5. **Branch convention** (e.g., `<username>/<id>-<slug>` or
       `feature/<id>-<slug>` or just `<id>-<slug>`).
    6. **Operating mode**:
@@ -219,9 +326,7 @@ B. ASK ME ONE BATCHED ROUND OF QUESTIONS
            delegated.
    7. **Worktree usage**: yes (`.worktrees/<slug>` inside each repo)
       or no (just feature branches in the main checkout).
-   8. **Sprint cadence**: fixed (1-week, 2-week, etc.) or
-      event-driven.
-   9. **Triad reviewers to enable** (any subset of the canonical
+   8. **Triad reviewers to enable** (any subset of the canonical
       three):
         - CTO (technical feasibility)
         - CPO (product priority — needs a PRD reference to be
@@ -229,22 +334,134 @@ B. ASK ME ONE BATCHED ROUND OF QUESTIONS
         - CDO (design fidelity — needs a design source to be
           effective)
         - Or specify others (Staff <platform>, Legal, Security, etc.)
-   10. **Canonical artifacts** to feed reviewers (paths if local,
+   9. **`/defect` destination** — where bugs get filed by the slash
+      command. Phrase concretely based on §A inspection. Examples:
+      
+      - "I see your Linear team has built-in Triage enabled. Should
+        `/defect` route there, or do you have a different bug
+        destination?"
+            a) "Use the team's Triage inbox (recommended)"
+            b) "I have a dedicated bug project — let me name it"
+            c) "Create a new 'Bug Triage' project"
+            d) "Use a label-based approach (apply `bug` label, no
+                dedicated project)"
+            e) "Skip /defect setup — I'll configure manually later"
+      
+      - "I see existing projects that could work: '<Bugs>', '<Defects>',
+        '<Issues>'. Which should `/defect` use?"
+            a) "Use '<Bugs>' (recommended match)"
+            b) "Use one of the others"
+            c) "Create a new 'Bug Triage' project"
+            d) "Skip /defect setup"
+      
+      - "No existing bug destination detected. Should I create one?"
+            a) "Yes, create 'Bug Triage'"
+            b) "Yes, but use a different name"
+            c) "Skip — I'll configure manually later"
+   10. **`/idea` destination** — where parking-lot ideas get filed.
+       Same shape. Common pre-existing destinations: "Ideas", "Backlog",
+       "Icebox", "Parking Lot", "Future Enhancements", "Roadmap".
+            a) "Use '<matched name>' (recommended match)"
+            b) "Use a different existing project — let me pick"
+            c) "Create a new 'Ideas / Backlog' project"
+            d) "Use a label-based approach (apply `idea` label only)"
+            e) "Skip /idea setup"
+   11. **Planning cadence** — how does this team plan work?
+       Phrase based on §A inspection:
+       
+       - If active sprints/cycles detected: "I see you run <inferred
+         cadence: e.g., 2-week sprints; you're mid-Cycle 14>. How should
+         the workflow plug in?"
+            a) "Continue existing cadence — don't create planning
+                artifacts now"
+            b) "Create one new sprint/cycle to anchor the workflow's
+                rollout"
+            c) "Replace existing cadence with the workflow's 10-day
+                sprint phases (Contract Lock → Core Build → UX →
+                Integration → Beta Readiness)"
+            d) "Skip planning entirely — just use /defect and /idea"
+       
+       - If milestones detected: similar shape, mapping to milestones.
+       
+       - If no planning structure detected: "No active sprint or
+         milestone. How do you want to plan?"
+            a) "Don't create anything — I plan work ad-hoc"
+            b) "Adopt the workflow's 10-day sprint phases starting now"
+            c) "Set up a custom cadence — let me describe it"
+   12. **Label / tag taxonomy** — based on what already exists:
+       
+       - "Your tracker already has labels: <list>. The workflow's
+         canonical taxonomy is <list>. Of the missing ones, which
+         should I add?"
+            a) "Add all missing labels"
+            b) "Add a subset — let me pick"
+            c) "Show me a diff first — don't write yet"
+            d) "Skip — I'll manage labels myself"
+   13. **Canonical artifacts** to feed reviewers (paths if local,
        URLs if hosted):
         - PRD / product spec
         - Design source (Figma, design system docs)
         - Architecture overview
-   11. **Stacks present** in the project (so per-repo AGENTS.md
+   14. **Stacks present** in the project (so per-repo AGENTS.md
        templates can be filled correctly): backend lang/framework, web
        stack, mobile platforms, shared-types layer, infra/deploy, QA
        harness, etc. SKIP this question entirely if introspection
        already gave you a confident answer.
+   15. **Docs storage location** — where ADRs and architectural docs
+       should live. Phrase based on §A inspection:
+       
+       - If `docs/decisions/` or `<project>-docs/` exists: "I see you
+         already keep docs in `<path>`. I'll put new ADRs there.
+         Confirm?"
+            a) "Yes, use that"
+            b) "Use a different location — let me describe it"
+            c) "Skip ADRs entirely"
+       
+       - If no docs location found AND tracker has documents feature
+         in active use (e.g., Linear initiative documents):
+         "No docs folder detected, but you're using <tracker>
+         documents. How should architectural docs live?"
+            a) "Create `docs/decisions/` in-repo (recommended —
+                version-controlled, PR-reviewable, greppable)"
+            b) "Attach docs to <tracker> initiatives instead"
+            c) "Hybrid: ADRs in-repo, strategy docs in <tracker>"
+            d) "Create a new dedicated docs repo (I'll create
+                `<project>-docs` on GitHub if you want)"
+            e) "Skip ADRs entirely"
+       
+       - If nothing detected: "Where should architectural docs (ADRs,
+         design docs, runbooks) live?"
+            a) "Create `docs/decisions/` in this repo (recommended)"
+            b) "Create a new dedicated docs repo"
+            c) "Attach to my tracker (if it supports documents)"
+            d) "Skip ADRs entirely — I'll manage docs myself"
+       
+       Default recommendation: **in-repo `docs/decisions/`** because
+       it's version-controlled, reviewable in PRs, greppable from the
+       command line, and survives tracker migrations. Tracker-attached
+       docs are great for strategy / PRD / product narrative; ADRs and
+       engineering decisions belong in the repo.
 
 C. SCAFFOLD THE FILES
-   After I answer, create or update (idempotently — check before
-   overwriting). **Adapt every template to the workspace's actual
-   layout** — don't blindly copy the templates if the project doesn't
-   match. In particular:
+   Mode-aware behavior:
+   - **LOCAL SYNC mode** (§B Q1 → "sync me locally"): SKIP this entire
+     section. Jump to memory bootstrap only (last bullet below) — write
+     `MEMORY.md` + `user_identity.md` + `project_current_state.md` +
+     `reference_tracker.md` seeded from existing AGENTS.md + tracker
+     config. Do NOT write shared files. Do NOT modify AGENTS.md /
+     CLAUDE.md / .claude/ / .agents/.
+   - **COMPLETE-PARTIAL mode**: For each file below, check if it
+     already exists with the workflow's signature. If so, skip. If
+     missing, write it. Show a diff before writing.
+   - **TEAM UPDATE mode**: Write changes as committed-and-PR'd (open a
+     branch like `<user>/aew-update-<date>`, commit the changes,
+     surface the PR URL — don't push to main directly).
+   - **FRESH or RE-INSTALL mode**: Write everything from scratch.
+
+   For TEAM UPDATE / FRESH / RE-INSTALL: create or update (idempotently —
+   check before overwriting). **Adapt every template to the workspace's
+   actual layout** — don't blindly copy the templates if the project
+   doesn't match. In particular:
    
    - If GREENFIELD or EXISTING-COMPATIBLE with a sibling-repo layout: use
      the templates in §13 as-is.
@@ -269,39 +486,102 @@ C. SCAFFOLD THE FILES
      mirror the skills to `.agents/skills/` too.
    - `.gitignore` entries for `/.worktrees/` in each repo (if using
      worktrees).
-   - An ADR placeholder noting the workflow was adopted, in whichever
-     `decisions/` directory makes sense for the layout: `docs/decisions/`
-     for single-repo, `<docs-repo>/decisions/` for multi-repo. If no
-     docs location exists, create `docs/decisions/0001-bootstrap.md`.
+   - An ADR placeholder noting the workflow was adopted — **but only
+     if the user picked an in-repo or dedicated-docs-repo location in
+     §B Q15**. Write it at the chosen path. If the user picked
+     tracker-attached docs, create the equivalent initiative-document /
+     project-document in §D instead. If the user picked "skip ADRs",
+     don't write any placeholder.
    - Memory bootstrap files at the path the agent's harness uses
      (typically `~/.claude/projects/<slugified-workdir>/memory/` for
      Claude Code; consult the equivalent path for Codex or other
      agents): `MEMORY.md` + `user_identity.md` +
      `project_current_state.md` + `reference_tracker.md`.
 
-D. SET UP THE ISSUE TRACKER
-   Using whichever tracker MCP/CLI you detected, create (idempotent — check
-   before creating):
-   - "Bug Triage" project / view / label.
-   - "Ideas / Backlog" project / view / label.
-   - Label taxonomy (adapt label names to the tracker's conventions; some
-     trackers use tags, others use components, others use projects):
-       - Kind: `bug`, `feature`, `improvement`, `kind:spec`
-       - Sprint: `sprint:s1` (next active sprint)
-       - Platform: one per platform present (`platform:web`, `:ios`,
-         `:android`, `:backend`, `:all`)
-       - Area: `area:<module>` for each module present
-       - Ops: `blocker`, `alarm:deploy-failure`, `gate:beta-ready`
-   - Initial "M0 / Current Sprint" document or epic with a placeholder body.
+D. WRITE TO THE TRACKER (only what the user approved in §B)
+   The tracker is shared state — writing to it without confirmation is
+   invasive. The §A inspection already gave you the lay of the land; the
+   §B questions confirmed exactly what to write. This phase just
+   executes those confirmed writes.
+
+   **Default behavior is "do as little as possible."** If the user said
+   "use existing X" or "skip", DO NOT create anything new.
+
+   Mode-aware behavior:
+   - **LOCAL SYNC mode**: SKIP this entire section. No tracker writes.
+     Just record the *existing* destinations in local memory so /defect
+     and /idea work for the local user.
+   - **COMPLETE-PARTIAL / TEAM UPDATE / FRESH / RE-INSTALL**: proceed
+     with the writes the user confirmed in §B, with one additional
+     check: re-verify each target doesn't already exist before
+     creating. Trackers are shared and other collaborators may have
+     created the same things in parallel.
+
+   D.1 — Write the /defect destination
+   Based on the user's answer to question 9:
+   - "Use built-in Triage" / "Use existing project X": no write needed.
+     Record the destination ID in `AGENTS.md` → "Tracker destinations"
+     section so the /defect skill knows where to file.
+   - "Create new project": create exactly one project with the chosen
+     name. Capture the ID. Record in AGENTS.md.
+   - "Label-based": no write needed. Record `mode: label-based, label:
+     <bug-label-name>` in AGENTS.md.
+   - "Skip": do nothing. The /defect skill will prompt at first use.
+
+   D.2 — Write the /idea destination
+   Same shape as D.1, based on answer to question 10.
+
+   D.3 — Write planning artifacts (only if requested)
+   Based on the user's answer to question 11:
+   - "Continue existing cadence" / "Don't create anything": no write.
+   - "Create one new sprint/cycle to anchor the rollout": create a
+     single sprint/cycle named per the team's existing naming pattern
+     (e.g., if they have Cycles 1-14, create Cycle 15). Pre-fill with
+     a "Workflow adoption" milestone or note; DO NOT pre-fill scope.
+   - "Adopt 10-day sprint phases": create a project/milestone named
+     "M0 — Workflow Adoption" with the five canonical phase milestones
+     (Contract Lock / Core Build / UX Layer / Integration / Beta
+     Readiness). Empty bodies; the user fills scope later.
+   - "Custom cadence": pause and ask for the cadence definition. Do
+     not invent one.
+
+   D.4 — Write labels (only if requested)
+   Based on the user's answer to question 12:
+   - "Add all missing labels": add labels not already in the tracker
+     from the canonical taxonomy (kind, sprint:s1, platform, area, ops).
+     Skip ones that already exist.
+   - "Add subset": add only the ones the user picked.
+   - "Show me a diff first": print the diff (which labels would be
+     added) and ask again before writing.
+   - "Skip": no write.
+
+   D.5 — Record destinations + cadence in AGENTS.md
+   Whatever destinations and cadence were chosen, write them into
+   `AGENTS.md` under a "Tracker destinations" section so /defect and
+   /idea know where to file at runtime, and so future sessions
+   understand the planning model. See §13.1 for the template.
+
+   **Universal rule:** every tracker write call passes `assignee: null`
+   explicitly. The Linear MCP and several others auto-assign to the
+   caller (= the human running the session) when assignee is omitted —
+   this pollutes the human's queue with tickets they shouldn't own.
+   Always pass `null` unless the title is prefixed with a human's name.
 
 E. REPORT
    Print a final summary:
    - Files created / updated (paths).
-   - Tracker objects created (with URLs/IDs).
-   - Manual follow-ups required (auth steps, secrets to set, design files to
-     link, etc.).
-   - The exact next prompt I should run to start working in this setup
-     (e.g., "Draft Sprint 1 plan from <PRD path>" or "Scan open alarms").
+   - Tracker writes performed (with URLs/IDs). If the user opted to use
+     existing destinations or skip writes, say so explicitly — "no
+     tracker writes performed; /defect routes to existing Triage" beats
+     leaving the user to guess.
+   - Manual follow-ups required (auth steps, secrets to set, design
+     files to link, etc.).
+   - The exact next prompt I should run to start working in this setup.
+     Examples:
+       - "Draft Sprint 1 plan from <PRD path>" (if they adopted sprint
+         phases)
+       - "Continue with current cycle" (if they kept existing cadence)
+       - "Try /defect to file a bug" (if they skipped planning entirely)
 
 Throughout, follow the rules in the spec verbatim. Two universal rules to
 double-check on every tracker call:
@@ -831,16 +1111,27 @@ Description structure:
 
 Omit sections that are genuinely empty. Don't pad with placeholders.
 
-### 6. File via the tracker
+### 6. Resolve the destination
+
+Read `AGENTS.md` → "Tracker destinations" section (written by the bootstrap). It specifies how /defect should file:
+
+- **Mode `project`**: file into a specific project / team / view. The destination ID is in the section.
+- **Mode `triage`**: file into the tracker's built-in Triage inbox (Linear has this; Jira's equivalent is the default backlog).
+- **Mode `label`**: file as an unassigned issue with the configured bug label applied, no specific project.
+- **Mode `unset`** or no "Tracker destinations" section: the bootstrap was skipped or `/defect` wasn't configured. Ask the user where to file (single batched question, then write the choice back to AGENTS.md so this doesn't repeat).
+
+### 7. File via the tracker
+
+Adapt the call shape to the destination mode resolved in step 6:
 
 ```
 <TRACKER_MCP_PREFIX>save_issue({
-  team / project: "<BUG_TRIAGE_PROJECT_ID>",
+  team / project: <destination_id_or_null>,
   title: "<5-10 word noun-led summary>",
   description: "<full markdown above>",
   priority: <1|2|3|4>,
   assignee: null,
-  labels: ["bug", "platform:<primary>"]
+  labels: ["bug", "platform:<primary>", <plus configured bug-label if mode == "label">]
 })
 ```
 
@@ -938,16 +1229,23 @@ The user types `/idea <description>` in chat. The description is everything afte
    <When this should come off the parking lot.>
    ```
 
-4. **File via the tracker:**
+4. **Resolve destination + file via the tracker.**
+
+   Read `AGENTS.md` → "Tracker destinations" section (written by the bootstrap). It specifies how /idea should file:
+   - Mode `project`: file into the configured ideas project / view.
+   - Mode `label`: file as an unassigned issue with the configured ideas label applied, no specific project.
+   - Mode `unset` or missing section: ask the user where ideas should go (single batched question, then write back to AGENTS.md so this doesn't repeat).
+
+   Then call:
 
    ```
    <TRACKER_MCP_PREFIX>save_issue({
-     team / project: "<IDEAS_PROJECT_ID>",
+     team / project: <destination_id_or_null>,
      title: "<6-12 word descriptive, noun-led; no 'Idea:' prefix>",
      description: "<full mini-spec from step 3>",
      priority: 4,
      assignee: null,
-     labels: ["feature", "platform:<primary>"]
+     labels: ["feature", "platform:<primary>", <plus configured ideas-label if mode == "label">]
    })
    ```
 
@@ -1073,7 +1371,33 @@ shipped platform with screenshots. NEVER close while a deploy is failing.
 - **Hierarchy:** Initiative → Project → Milestone → Issue.
 - **Assignee rule — `assignee: null` ALWAYS** unless ticket title starts
   with "<HumanName>:".
-- **Canonical labels:** see §4 of team-process-bootstrap.md.
+- **Canonical labels:** see §4 of team-process-spec.md.
+
+## Tracker destinations
+
+> This section is the canonical signature that the bootstrap has run
+> here. `/defect` and `/idea` read it to know where to file. Edit via
+> the bootstrap's TEAM UPDATE mode, not by hand.
+
+- **Tracker type:** Linear / Jira / GitHub Issues / Notion
+- **Workspace / team:** `<name>` (id: `<id>`)
+- **`/defect` destination:**
+  - Mode: `project` | `triage` | `label` | `unset`
+  - Target: `<project name>` (id: `<id>`) OR `<label name>` OR `Built-in Triage`
+- **`/idea` destination:**
+  - Mode: `project` | `label` | `unset`
+  - Target: `<project name>` (id: `<id>`) OR `<label name>`
+- **Planning cadence:** `existing-cadence` | `10-day-phases` | `custom` | `none`
+  - Detail: `<e.g., "2-week cycles, currently on Cycle 14">` or
+    `<"M0 — Workflow Adoption project with 5 phase milestones">`
+- **Issue ID prefix:** `PROJ-NN`
+- **Bootstrap version:** `<aew-version>` installed by `<contributor>` on `<date>`
+
+## Docs location
+
+- **ADR location:** `docs/decisions/` | `<docs-repo>/decisions/` | `<tracker-attached>` | `skipped`
+- **Strategy / PRD docs:** `<path or tracker location>`
+- **Design source:** `<path or URL>`
 
 ---
 
@@ -1215,29 +1539,46 @@ metadata:
 
 Use the task-tracking tool (TaskCreate / equivalent) to mark each as it lands.
 
+**Phase A — Introspect (read-only):**
 - [ ] **A1.** Walk the actual file tree of the current folder + immediate siblings.
-- [ ] **A2.** Detect git host org + repo list. Record findings.
+- [ ] **A2.** Detect git host org + repo list.
 - [ ] **A3.** Detect tracker MCP / CLI availability + team/workspace name.
 - [ ] **A4.** Detect local git user.name + user.email.
 - [ ] **A5.** Detect existing AGENTS.md / CLAUDE.md / .claude/ / .agents/.
 - [ ] **A6.** Detect stack-hint files (package.json, Cargo.toml, build.gradle, etc.).
-- [ ] **A7.** **Classify** the workspace as GREENFIELD / EXISTING-COMPATIBLE / EXISTING-DIVERGENT / AMBIGUOUS. Record reasoning.
-- [ ] **B1.** AskUserQuestion (or your agent's equivalent batched-question tool): confirm classification (Q1) + ask anything else not detected (Q2-Q11). Single batched turn.
-- [ ] **C1.** Write root `AGENTS.md` from §13.1 template, filled with answers.
-- [ ] **C2.** Write `CLAUDE.md` compatibility shim.
-- [ ] **C3.** Write per-repo / per-module `AGENTS.md` stubs from §13.2.
-- [ ] **C4.** Write `.claude/skills/defect/SKILL.md` from §11.1, with tracker MCP prefix + project IDs filled in.
-- [ ] **C5.** Write `.claude/skills/idea/SKILL.md` from §11.2.
-- [ ] **C6.** Add `/.worktrees/` to each repo's `.gitignore` if using worktrees.
-- [ ] **C7.** Write `docs/decisions/0001-bootstrap.md` ADR.
-- [ ] **C8.** Bootstrap memory: `MEMORY.md` + `user_identity.md` + `project_current_state.md` + `reference_tracker.md`.
-- [ ] **D1.** Tracker: ensure team / workspace exists. Capture ID.
-- [ ] **D2.** Tracker: create "Bug Triage" project / view / label. Capture ID.
-- [ ] **D3.** Tracker: create "Ideas / Backlog" project / view / label. Capture ID.
-- [ ] **D4.** Tracker: ensure label taxonomy exists.
-- [ ] **D5.** Tracker: create initial "M0 / Current Sprint" document with placeholder.
-- [ ] **D6.** Patch project IDs into the freshly-written skill files (C4-C5).
-- [ ] **E1.** Print final summary: files, tracker objects, follow-ups, next prompt.
+- [ ] **A7.** Detect docs storage signals (docs/ folder, dedicated docs repo, tracker documents in use, top-level PRD/architecture files).
+- [ ] **A8.** Read tracker state (projects, sprints/cycles, labels, built-in Triage availability, active issue count per project) — DON'T WRITE.
+- [ ] **A9.** Detect **workflow installation state** (FRESH / PARTIAL / INSTALLED) by scanning for: AGENTS.md "Tracker destinations" section, bootstrap ADR, canonical labels co-existing in tracker, per-repo AGENTS.md files.
+- [ ] **A10.** Classify the workspace shape: GREENFIELD / EXISTING-COMPATIBLE / EXISTING-DIVERGENT / AMBIGUOUS.
+
+**Phase B — Ask (single batched turn):**
+- [ ] **B1.** If install state is PARTIAL/INSTALLED, ask the scope question first (sync me / complete / team update / re-bootstrap). If FRESH, ask workspace classification confirmation.
+- [ ] **B2.** Ask follow-up questions only as needed by the chosen mode:
+       - LOCAL SYNC: no further questions; skip to memory bootstrap.
+       - COMPLETE-PARTIAL: only the questions whose answers aren't already in AGENTS.md / tracker.
+       - TEAM UPDATE / FRESH / RE-INSTALL: full Q2-Q15 (skip any auto-detected).
+
+**Phase C — Scaffold files (mode-dependent):**
+- [ ] **C1.** LOCAL SYNC: skip to memory bootstrap (C8) only.
+- [ ] **C2.** Root `AGENTS.md` from §13.1, including "Tracker destinations" + "Docs location" sections.
+- [ ] **C3.** `CLAUDE.md` compatibility shim.
+- [ ] **C4.** Per-repo / per-module `AGENTS.md` stubs from §13.2.
+- [ ] **C5.** `.claude/skills/defect/SKILL.md` from §11.1 (skills now read destinations from AGENTS.md, not hardcoded).
+- [ ] **C6.** `.claude/skills/idea/SKILL.md` from §11.2.
+- [ ] **C7.** Add `/.worktrees/` to `.gitignore` if using worktrees.
+- [ ] **C8.** ADR placeholder at the user-chosen docs location (skip if user picked tracker-attached or "skip ADRs").
+- [ ] **C9.** Memory bootstrap (always): `MEMORY.md` + `user_identity.md` + `project_current_state.md` + `reference_tracker.md`. In LOCAL SYNC mode, seed these from existing AGENTS.md + tracker state.
+
+**Phase D — Tracker writes (only what the user approved; skip in LOCAL SYNC):**
+- [ ] **D1.** Create /defect destination project ONLY if user picked "create new" in Q9.
+- [ ] **D2.** Create /idea destination project ONLY if user picked "create new" in Q10.
+- [ ] **D3.** Create planning artifacts ONLY if user opted in via Q11 (NEVER auto-create "M0 / Current Sprint").
+- [ ] **D4.** Add missing labels ONLY if user opted in via Q12.
+- [ ] **D5.** Create initiative-attached docs ONLY if user picked tracker-attached docs in Q15.
+- [ ] **D6.** Record final destinations + cadence + docs location in AGENTS.md "Tracker destinations" + "Docs location" sections.
+
+**Phase E — Report:**
+- [ ] **E1.** Print final summary: files written/skipped, tracker writes performed (or "none — used existing setup"), manual follow-ups, next prompt.
 
 ---
 
