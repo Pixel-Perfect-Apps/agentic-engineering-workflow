@@ -4,6 +4,8 @@ All notable changes to this plugin will be documented here. Format based on [Kee
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-05-15
+
 ### Fixed
 - **Install-state misdetection on legacy installs.** A v0.1.x install (complete by its era's standards, using the older `## Tracker — Linear` section heading) was being detected as PARTIAL when the v0.2.0+ setup ran on it, suggesting incomplete remediation. Now classified as LEGACY (a separate state) and routed automatically to UPGRADE mode, which walks through the new v0.2.0 migration to rename the section + add new fields. Spec §A detection logic now distinguishes "legacy-format complete install" from "half-finished current-format install."
 - **Linear MCP delete limitation called out.** Some MCP builds expose `delete_attachment` / `delete_comment` / `delete_status_update` but NOT `delete_project` / `delete_document`. The spec previously implied a setup could "retire" auto-created projects via deletion — now reframed as archive / cancel / tombstone, with a manual-UI-cleanup fallback when full deletion is needed. General MCP capability caveats added for Jira / Notion / GitHub Issues too.
@@ -77,7 +79,8 @@ Initial public release.
 - Plugin uses SemVer; this is a 0.x release so breaking changes may land in any minor version until 1.0.
 - `version` is now pinned, so `/plugin update` will pick up future releases. Commits between releases won't auto-deploy to installed instances.
 
-[Unreleased]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/releases/tag/v0.3.1
 [0.3.0]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/releases/tag/v0.3.0
 [0.2.0]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/releases/tag/v0.2.0
 [0.1.1]: https://github.com/Pixel-Perfect-Apps/agentic-engineering-workflow/releases/tag/v0.1.1
